@@ -3,9 +3,12 @@ from dotenv import load_dotenv
 load_dotenv()
 from uuid import uuid4
 from src.utils import get_time
-
 from groq import Groq
+os.makedirs('session_chats')
+
 API_KEY = os.getenv("API_KEY")
+
+
 
 def usermessage(message,role = "user"):
     return {}
@@ -18,6 +21,8 @@ class ElementAI():
 
         self.client = Groq(api_key = self.api_key)
         if self.existing_session_id:
+            pass
+        else:
             self.chat_history = [{
                             "role": "system",
                             "content": "You are a helpful and concise AI assistant."
@@ -38,8 +43,8 @@ class ElementAI():
     
     def cleanup_session(self):
         import json
-        with open(f"{self.session_id}.json", "w", encoding="utf-8") as f:
+        with open(f"session_chats/{self.session_id}.json", "w", encoding="utf-8") as f:
             json.dump(self.chat_history, f, indent=4, ensure_ascii=False)
-        print(f'To Restore this conversation use session ID : {self.session_id}')
+        print(f'\n To Restore this conversation use session ID : {self.session_id}')
             
     
