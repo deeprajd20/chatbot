@@ -1,5 +1,7 @@
 from src.config_llm import ElementAI
 
 a = ElementAI()
-res = a.get_response('Hi how are you')
-print(res)
+while True:
+    get_input = input("Enter Your Question:")
+    res = a.get_response(str(get_input))
+    print(res)
