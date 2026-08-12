@@ -14,6 +14,11 @@
     <!-- Markdown renderer -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 
+    <!-- Syntax highlighting for code blocks -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
     <style>
         html,
         body {
@@ -52,16 +57,6 @@
             margin-bottom: 0;
         }
 
-        .md-content pre {
-            background-color: #18181b;
-            color: #f4f4f5;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            overflow-x: auto;
-            margin: 0.5em 0;
-            font-size: 0.85em;
-        }
-
         .md-content code {
             background-color: #e4e4e7;
             padding: 0.1em 0.35em;
@@ -70,6 +65,58 @@
         }
 
         .md-content pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        /* Code block with header + copy button */
+        .md-content .code-block {
+            background-color: #282c34;
+            border-radius: 0.6rem;
+            overflow: hidden;
+            margin: 0.6em 0;
+            font-size: 0.85em;
+        }
+
+        .md-content .code-block-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.4rem 0.9rem;
+            background-color: #21252b;
+            color: #a1a1aa;
+            font-size: 0.75rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            text-transform: lowercase;
+        }
+
+        .md-content .copy-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.3em;
+            background: transparent;
+            color: #a1a1aa;
+            border: none;
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.3rem;
+            transition: background-color 0.15s, color 0.15s;
+        }
+
+        .md-content .copy-btn:hover {
+            background-color: #33373e;
+            color: #f4f4f5;
+        }
+
+        .md-content .code-block pre {
+            margin: 0;
+            padding: 0.85rem 1rem;
+            overflow-x: auto;
+            background-color: transparent;
+        }
+
+        .md-content .code-block code.hljs {
             background-color: transparent;
             padding: 0;
         }
@@ -268,6 +315,50 @@
     <!-- JAVASCRIPT -->
 
     <script>
+
+        // -----------------------------------
+        // MARKDOWN + SYNTAX HIGHLIGHTING SETUP
+        // -----------------------------------
+
+        const mdRenderer = new marked.Renderer();
+
+        mdRenderer.code = function (code, infostring) {
+            const lang = (infostring || "").trim().split(/\s+/)[0];
+            const validLang = lang && hljs.getLanguage(lang) ? lang : null;
+
+            const highlighted = validLang
+                ? hljs.highlight(code, { language: validLang }).value
+                : hljs.highlightAuto(code).value;
+
+            const langLabel = validLang || "code";
+
+            return `
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <span>${langLabel}</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fa-regular fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <pre><code class="hljs">${highlighted}</code></pre>
+                </div>
+            `;
+        };
+
+        marked.use({ renderer: mdRenderer });
+
+
+        function copyCode(button) {
+            const codeBlock = button.closest(".code-block").querySelector("code");
+            navigator.clipboard.writeText(codeBlock.innerText).then(() => {
+                const original = button.innerHTML;
+                button.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+                setTimeout(() => {
+                    button.innerHTML = original;
+                }, 1500);
+            });
+        }
+
 
         async function sendMessage() {
 
