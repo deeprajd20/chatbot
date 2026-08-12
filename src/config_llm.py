@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 load_dotenv()
 from uuid import uuid4
 from src.utils import get_time
-from groq import Groq
-os.makedirs('session_chats')
+from groq import AsyncGroq
+os.makedirs('session_chats',exist_ok=True)
 
 API_KEY = os.getenv("API_KEY")
 
@@ -19,7 +19,7 @@ class ElementAI():
         self.api_key = API_KEY
         self.existing_session_id = existing_session_id
 
-        self.client = Groq(api_key = self.api_key)
+        self.client = AsyncGroq(api_key = self.api_key)
         if self.existing_session_id:
             pass
         else:
@@ -29,17 +29,21 @@ class ElementAI():
                         }]
         self.session_id = uuid4()
 
-    def get_response(self,query):
+    async def get_response(self,query):
         self.chat_history.append({
                         "role":"user",
                         "content":f"{query}"
                     })
-        response = self.client.chat.completions.create(
+        response = await self.client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=self.chat_history
             )
-        
-        return response.choices[0].message.content
+        content = response.choices[0].message.content
+        self.chat_history.append({
+                        "role":"assistant",
+                        "content":f"{content}"
+                    })
+        return content
     
     def cleanup_session(self):
         import json

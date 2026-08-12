@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>AI Assistant Studio</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Markdown renderer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            background-color: #dce2fd;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont,
+                'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .stroke-border {
+            border: 2px solid #18181b;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+
+        /* Markdown content styling inside AI bubbles */
+        .md-content {
+            word-wrap: break-word;
+        }
+
+        .md-content p {
+            margin-bottom: 0.5em;
+        }
+
+        .md-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .md-content pre {
+            background-color: #18181b;
+            color: #f4f4f5;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 0.5em 0;
+            font-size: 0.85em;
+        }
+
+        .md-content code {
+            background-color: #e4e4e7;
+            padding: 0.1em 0.35em;
+            border-radius: 0.25rem;
+            font-size: 0.85em;
+        }
+
+        .md-content pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        .md-content ul,
+        .md-content ol {
+            margin: 0.5em 0;
+            padding-left: 1.5em;
+        }
+
+        .md-content ul {
+            list-style-type: disc;
+        }
+
+        .md-content ol {
+            list-style-type: decimal;
+        }
+
+        .md-content h1,
+        .md-content h2,
+        .md-content h3 {
+            font-weight: 700;
+            margin: 0.6em 0 0.3em;
+        }
+
+        .md-content h1 {
+            font-size: 1.25em;
+        }
+
+        .md-content h2 {
+            font-size: 1.15em;
+        }
+
+        .md-content h3 {
+            font-size: 1.05em;
+        }
+
+        .md-content blockquote {
+            border-left: 3px solid #a1a1aa;
+            padding-left: 0.75em;
+            margin: 0.5em 0;
+            color: #52525b;
+        }
+
+        .md-content a {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+
+        .md-content table {
+            border-collapse: collapse;
+            margin: 0.5em 0;
+            width: 100%;
+        }
+
+        .md-content th,
+        .md-content td {
+            border: 1px solid #d4d4d8;
+            padding: 0.35em 0.6em;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+
+<body class="h-screen flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
+
+    <!-- Background Decorative Shapes -->
+
+    <div class="absolute top-12 left-12 w-20 h-20 bg-[#a0aeff] rounded-full opacity-80 pointer-events-none">
+    </div>
+
+    <div class="absolute top-1/3 -right-8 w-32 h-32 bg-[#8c9eff] rounded-full opacity-80 pointer-events-none">
+    </div>
+
+    <div class="absolute bottom-12 left-10 w-28 h-28 bg-[#a0aeff] rounded-full opacity-80 pointer-events-none">
+    </div>
+
+    <div class="absolute -bottom-10 right-1/4 w-36 h-36 bg-[#8c9eff] rounded-full opacity-80 pointer-events-none">
+    </div>
+
+
+    <!-- Main App Window -->
+
+    <div
+        class="w-[95vw] h-[92vh] bg-[#f5f6ff] stroke-border rounded-[28px] shadow-2xl overflow-hidden flex flex-col z-10">
+
+        <!-- Main Content Grid -->
+
+        <div class="grid grid-cols-12 gap-6 p-6 h-full min-h-0">
+
+
+            <!-- LEFT SIDEBAR -->
+
+            <aside class="col-span-12 lg:col-span-2 space-y-6 overflow-y-auto custom-scroll">
+
+                <!-- User Badge -->
+
+                <div class="flex items-center gap-3 cursor-pointer p-2 rounded-xl hover:bg-white/60 transition">
+
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+                        class="w-10 h-10 rounded-full stroke-border object-cover" />
+
+                    <span class="font-bold text-zinc-800">
+                        Element AI
+                    </span>
+
+                </div>
+
+                <hr class="border-zinc-300" />
+
+            </aside>
+
+
+            <!-- CENTER -->
+
+            <main class="col-span-12 lg:col-span-8 flex flex-col h-full min-h-0 gap-6">
+
+
+                <!-- CHAT DISPLAY -->
+
+                <div id="chatMessages"
+                    class="bg-white rounded-2xl stroke-border p-6 flex-1 min-h-0 space-y-4 flex flex-col overflow-y-auto custom-scroll">
+
+                    <!-- Welcome message -->
+
+                    <div id="welcomeMessage"
+                        class="flex flex-col justify-center items-center h-full text-center text-zinc-400">
+
+                        <i class="fa-solid fa-robot text-4xl text-indigo-500 mb-4">
+                        </i>
+
+                        <h2 class="text-xl font-bold text-zinc-700">
+                            Welcome to Element AI
+                        </h2>
+
+                        <p class="text-sm mt-2">
+                            Ask me anything.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CHAT INPUT -->
+
+                <div class="bg-white rounded-2xl stroke-border p-4 space-y-3 shrink-0">
+
+                    <div class="flex items-center gap-3">
+
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+                            class="w-10 h-10 rounded-full stroke-border object-cover" />
+
+
+                        <input id="messageInput" type="text" placeholder="What's on your mind? Ask Element AI..."
+                            autocomplete="off"
+                            class="w-full bg-zinc-100 stroke-border rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+
+                    </div>
+
+
+                    <hr class="border-zinc-200" />
+
+
+                    <div class="flex justify-end text-xs font-semibold text-zinc-600 px-2 pt-1">
+
+                        <button id="sendButton" onclick="sendMessage()"
+                            class="flex items-center gap-2 bg-indigo-500 text-white px-5 py-2 rounded-full hover:bg-indigo-600 transition">
+
+                            <i class="fa-solid fa-paper-plane"></i>
+
+                            <span id="sendButtonText">
+                                Generate
+                            </span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </main>
+
+
+            <!-- RIGHT SIDEBAR -->
+
+            <aside class="col-span-12 lg:col-span-2 space-y-6 overflow-y-auto custom-scroll">
+            </aside>
+
+        </div>
+
+    </div>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script>
+
+        async function sendMessage() {
+
+            const input = document.getElementById("messageInput");
+            const chatMessages = document.getElementById("chatMessages");
+            const sendButton = document.getElementById("sendButton");
+            const sendButtonText = document.getElementById("sendButtonText");
+            const welcomeMessage = document.getElementById("welcomeMessage");
+
+
+            // Get message
+
+            const message = input.value.trim();
+
+
+            // Don't send empty message
+
+            if (!message) {
+                return;
+            }
+
+
+            // Remove welcome message
+
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+
+
+            // Disable button
+
+            sendButton.disabled = true;
+
+            sendButton.classList.add(
+                "opacity-50",
+                "cursor-not-allowed"
+            );
+
+            sendButtonText.innerText = "Thinking...";
+
+
+            // -----------------------------
+            // USER MESSAGE
+            // -----------------------------
+
+            const userMessage = document.createElement("div");
+
+            userMessage.className =
+                "self-end bg-indigo-500 text-white rounded-2xl rounded-br-md p-4 max-w-[85%] break-words whitespace-pre-wrap";
+
+            userMessage.innerText = message;
+
+            chatMessages.appendChild(userMessage);
+
+
+            // Clear input
+
+            input.value = "";
+
+
+            // -----------------------------
+            // AI LOADING MESSAGE
+            // -----------------------------
+
+            const aiMessage = document.createElement("div");
+
+            aiMessage.className =
+                "self-start bg-zinc-100 text-zinc-800 rounded-2xl rounded-bl-md p-4 max-w-[85%] break-words";
+
+            aiMessage.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-spinner fa-spin text-indigo-500"></i>
+                    <span>Thinking...</span>
+                </div>
+            `;
+
+            chatMessages.appendChild(aiMessage);
+
+
+            // Scroll to bottom
+
+            chatMessages.scrollTop =
+                chatMessages.scrollHeight;
+
+
+            try {
+
+                // -----------------------------
+                // CALL FASTAPI
+                // -----------------------------
+
+                const response = await fetch("/chat", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        message: message
+                    })
+
+                });
+
+
+                // Check HTTP response
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `Server returned ${response.status}`
+                    );
+
+                }
+
+
+                // Convert response to JSON
+
+                const data = await response.json();
+
+
+                console.log("AI response:", data);
+
+
+                // -----------------------------
+                // DISPLAY AI RESPONSE AS MARKDOWN
+                // -----------------------------
+
+                aiMessage.innerHTML = "";
+
+                const mdWrapper = document.createElement("div");
+                mdWrapper.className = "md-content prose prose-sm max-w-none";
+
+                // Render markdown -> HTML (marked handles escaping of raw text)
+                mdWrapper.innerHTML = marked.parse(data.response || "");
+
+                aiMessage.appendChild(mdWrapper);
+
+
+                // Scroll to bottom
+
+                chatMessages.scrollTop =
+                    chatMessages.scrollHeight;
+
+
+            } catch (error) {
+
+                console.error(
+                    "Chat request failed:",
+                    error
+                );
+
+
+                // Show error
+
+                aiMessage.className =
+                    "self-start bg-red-100 text-red-600 rounded-2xl rounded-bl-md p-4 max-w-[85%] break-words";
+
+                aiMessage.innerText =
+                    "Sorry, something went wrong. Please try again.";
+
+            }
+
+
+            // -----------------------------
+            // ENABLE BUTTON
+            // -----------------------------
+
+            sendButton.disabled = false;
+
+            sendButton.classList.remove(
+                "opacity-50",
+                "cursor-not-allowed"
+            );
+
+            sendButtonText.innerText = "Generate";
+
+
+            // Focus input
+
+            input.focus();
+
+        }
+
+
+        // -----------------------------------
+        // ENTER KEY
+        // -----------------------------------
+
+        document
+            .getElementById("messageInput")
+            .addEventListener("keydown", function (event) {
+
+                if (event.key === "Enter") {
+
+                    event.preventDefault();
+
+                    sendMessage();
+
+                }
+
+            });
+
+    </script>
+
+</body>
+
+</html>
