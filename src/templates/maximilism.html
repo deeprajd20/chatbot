@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Assistant Studio </title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Markdown Renderer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+
+    <!-- Syntax Highlighting -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            /* Rich Eclectic Maximalist Canvas */
+            background-color: #fdf6ed;
+            background-image:
+                radial-gradient(#e17055 1.5px, transparent 1.5px),
+                radial-gradient(#0984e3 1.5px, #fdf6ed 1.5px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #1e1b18;
+        }
+
+        h1,
+        h2,
+        h3,
+        .font-serif-title {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* -----------------------------------
+           MAXIMALIST FRAMED PANELS
+        ----------------------------------- */
+        .max-panel {
+            background-color: #fffcf8;
+            border: 3px solid #1e1b18;
+            box-shadow: 8px 8px 0px 0px #1e1b18;
+        }
+
+        .max-card {
+            background-color: #fefae0;
+            border: 2px solid #1e1b18;
+            box-shadow: 4px 4px 0px 0px #1e1b18;
+        }
+
+        .max-badge {
+            background-color: #d63031;
+            color: #ffffff;
+            border: 2px solid #1e1b18;
+            box-shadow: 3px 3px 0px 0px #1e1b18;
+        }
+
+        .max-input {
+            background-color: #ffffff;
+            border: 2.5px solid #1e1b18;
+            box-shadow: 3px 3px 0px 0px #1e1b18;
+            transition: all 0.15s ease;
+        }
+
+        .max-input:focus {
+            background-color: #fffdfa;
+            border-color: #0984e3;
+            box-shadow: 5px 5px 0px 0px #0984e3;
+        }
+
+        /* -----------------------------------
+           BUTTONS & INTERACTIONS
+        ----------------------------------- */
+        .max-btn-primary {
+            background-color: #0984e3;
+            color: #ffffff;
+            border: 2.5px solid #1e1b18;
+            box-shadow: 4px 4px 0px 0px #1e1b18;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .max-btn-primary:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px 0px #1e1b18;
+            background-color: #006bbf;
+        }
+
+        .max-btn-primary:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px 0px #1e1b18;
+        }
+
+        .max-btn-accent {
+            background-color: #e17055;
+            color: #ffffff;
+            border: 2px solid #1e1b18;
+            box-shadow: 3px 3px 0px 0px #1e1b18;
+            transition: all 0.15s ease;
+        }
+
+        .max-btn-accent:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px 0px #1e1b18;
+            background-color: #d65a31;
+        }
+
+        /* -----------------------------------
+           CUSTOM SCROLLBAR
+        ----------------------------------- */
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #00b894;
+            border: 2px solid #1e1b18;
+            border-radius: 4px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #fdf6ed;
+            border-left: 2px solid #1e1b18;
+        }
+
+        /* -----------------------------------
+           SESSION ITEMS
+        ----------------------------------- */
+        .session-item {
+            transition: all 0.15s ease;
+            background-color: #ffffff;
+            border: 2px solid #1e1b18;
+            box-shadow: 3px 3px 0px 0px #1e1b18;
+        }
+
+        .session-item:hover {
+            background-color: #fdcb6e;
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px 0px #1e1b18;
+        }
+
+        .session-item.active-session {
+            background-color: #fdcb6e !important;
+            box-shadow: 5px 5px 0px 0px #1e1b18 !important;
+            font-weight: 700;
+        }
+
+        /* -----------------------------------
+           CHAT BUBBLES
+        ----------------------------------- */
+        .chat-user-message {
+            align-self: flex-end;
+            background-color: #0984e3;
+            color: #ffffff;
+            border: 2.5px solid #1e1b18;
+            border-radius: 1.25rem;
+            border-bottom-right-radius: 0.25rem;
+            padding: 1rem 1.25rem;
+            max-width: 85%;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+            box-shadow: 5px 5px 0px 0px #1e1b18;
+        }
+
+        .chat-ai-message {
+            align-self: flex-start;
+            background-color: #fefae0;
+            color: #1e1b18;
+            border: 2.5px solid #1e1b18;
+            border-radius: 1.25rem;
+            border-bottom-left-radius: 0.25rem;
+            padding: 1.25rem;
+            max-width: 85%;
+            overflow-wrap: anywhere;
+            box-shadow: 5px 5px 0px 0px #1e1b18;
+        }
+
+        /* -----------------------------------
+           MARKDOWN STYLES
+        ----------------------------------- */
+        .md-content {
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .md-content p {
+            margin-bottom: 0.6em;
+        }
+
+        .md-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .md-content code {
+            background-color: #e17055;
+            color: #ffffff;
+            padding: 0.15em 0.4em;
+            border-radius: 0.25rem;
+            font-size: 0.85em;
+            border: 1px solid #1e1b18;
+            font-weight: 600;
+        }
+
+        .md-content .code-block {
+            background-color: #1e1b18;
+            border: 2px solid #1e1b18;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            margin: 0.8em 0;
+            font-size: 0.85em;
+            box-shadow: 4px 4px 0px 0px #00b894;
+        }
+
+        .md-content .code-block-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.4rem 0.9rem;
+            background-color: #2d3436;
+            color: #fdcb6e;
+            font-size: 0.75rem;
+            font-family: monospace;
+            text-transform: lowercase;
+            border-bottom: 2px solid #1e1b18;
+        }
+
+        .md-content .copy-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.3em;
+            background: #e17055;
+            color: #ffffff;
+            border: 1px solid #1e1b18;
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.3rem;
+            font-weight: 600;
+            transition: all 0.15s;
+        }
+
+        .md-content .copy-btn:hover {
+            background-color: #d63031;
+        }
+
+        .md-content .code-block pre {
+            margin: 0;
+            padding: 0.85rem 1rem;
+            overflow-x: auto;
+            background-color: transparent;
+        }
+
+        .md-content .code-block code.hljs {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        .md-content ul,
+        .md-content ol {
+            margin: 0.5em 0;
+            padding-left: 1.5em;
+        }
+
+        .md-content ul {
+            list-style-type: disc;
+        }
+
+        .md-content ol {
+            list-style-type: decimal;
+        }
+
+        .md-content h1,
+        .md-content h2,
+        .md-content h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 800;
+            margin: 0.6em 0 0.3em;
+            color: #1e1b18;
+        }
+
+        .md-content blockquote {
+            border-left: 4px solid #d63031;
+            background-color: #fff0f0;
+            padding: 0.5em 0.75em;
+            margin: 0.5em 0;
+            border-radius: 0 0.5rem 0.5rem 0;
+            font-style: italic;
+        }
+
+        .md-content a {
+            color: #d63031;
+            text-decoration: underline;
+            font-weight: 700;
+        }
+
+        .md-content table {
+            border-collapse: collapse;
+            margin: 0.5em 0;
+            width: 100%;
+            background-color: #ffffff;
+            border: 2px solid #1e1b18;
+        }
+
+        .md-content th {
+            background-color: #fdcb6e;
+            color: #1e1b18;
+            font-weight: 700;
+            border: 1.5px solid #1e1b18;
+            padding: 0.4em 0.6em;
+        }
+
+        .md-content td {
+            border: 1.5px solid #1e1b18;
+            padding: 0.35em 0.6em;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 1023px) {
+            body {
+                overflow: auto;
+            }
+
+            .main-window {
+                height: auto;
+                min-height: 95vh;
+            }
+        }
+    </style>
+</head>
+
+<body class="h-screen flex items-center justify-center p-3 md:p-6 relative overflow-hidden">
+
+    <!-- DECORATIVE GALLERY ACCENTS -->
+    <div
+        class="absolute -top-10 -left-10 w-40 h-40 bg-amber-400 rounded-full border-4 border-slate-900 shadow-[6px_6px_0px_#1e1b18] pointer-events-none hidden md:block">
+    </div>
+    <div
+        class="absolute -bottom-10 -right-10 w-52 h-52 bg-emerald-400 rounded-full border-4 border-slate-900 shadow-[6px_6px_0px_#1e1b18] pointer-events-none hidden md:block">
+    </div>
+    <div
+        class="absolute top-1/4 right-8 w-12 h-12 bg-rose-500 rotate-12 border-3 border-slate-900 shadow-[4px_4px_0px_#1e1b18] pointer-events-none hidden lg:block">
+    </div>
+
+    <!-- MAIN APP WINDOW -->
+    <div class="main-window w-[96vw] h-[93vh] max-panel rounded-3xl overflow-hidden flex flex-col z-10 relative">
+
+        <!-- HEADER BAR -->
+        <header class="bg-amber-300 border-b-3 border-slate-900 px-6 py-3 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-3">
+                <span class="w-4 h-4 rounded-full bg-rose-500 border-2 border-slate-900 inline-block"></span>
+                <span class="w-4 h-4 rounded-full bg-amber-500 border-2 border-slate-900 inline-block"></span>
+                <span class="w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-900 inline-block"></span>
+      
+            </div>
+  
+        </header>
+
+        <!-- MAIN CONTENT GRID -->
+        <div class="grid grid-cols-12 gap-5 p-5 h-full min-h-0 bg-[#fdf6ed]">
+
+            <!-- LEFT SIDEBAR -->
+            <aside class="col-span-12 lg:col-span-3 xl:col-span-3 flex flex-col min-h-0">
+
+                <!-- USER BADGE CARD -->
+                <div class="flex items-center gap-3 p-3 rounded-2xl max-card mb-4 bg-teal-300">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+                        class="w-12 h-12 rounded-xl border-2 border-slate-900 object-cover shadow-[2px_2px_0px_#1e1b18]"
+                        alt="User" />
+                    <div>
+                        <span class="font-serif-title font-extrabold text-slate-900 text-base block leading-tight">
+                            Element AI
+                        </span>
+                        <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">A Timepass Project</span>
+                    </div>
+                </div>
+
+                <!-- CHAT HISTORY BAR -->
+                <div class="flex items-center justify-between px-1 mb-3">
+                    <h2 class="font-serif-title font-bold text-slate-900 text-lg">
+                        Archives
+                    </h2>
+                    <button id="newChatButton" onclick="startNewChat()"
+                        class="max-btn-accent px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5"
+                        title="New Chat">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>New Entry</span>
+                    </button>
+                </div>
+
+                <!-- SESSION LIST -->
+                <div id="sessionList" class="flex-1 min-h-0 overflow-y-auto custom-scroll space-y-2.5 pr-1.5">
+                    <div class="text-xs font-semibold text-slate-600 px-2 italic">
+                        Fetching collections...
+                    </div>
+                </div>
+
+            </aside>
+
+            <!-- CENTER MAIN CHAT DISPLAY -->
+            <main class="col-span-12 lg:col-span-9 xl:col-span-9 flex flex-col h-full min-h-0 gap-4">
+
+                <!-- CHAT DISPLAY -->
+                <div id="chatMessages"
+                    class="bg-[#fffefb] border-2 border-slate-900 shadow-[4px_4px_0px_#1e1b18] rounded-2xl p-5 flex-1 min-h-0 space-y-4 flex flex-col overflow-y-auto custom-scroll">
+
+                    <!-- WELCOME MESSAGE -->
+                    <div id="welcomeMessage"
+                        class="flex flex-col justify-center items-center h-full text-center my-auto">
+                        <div
+                            class="w-20 h-20 rounded-2xl bg-amber-400 border-3 border-slate-900 shadow-[5px_5px_0px_#1e1b18] flex items-center justify-center mb-4 text-slate-900">
+                            <i class="fa-solid fa-palette text-4xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-black text-slate-900 font-serif-title">
+                            More is More.
+                        </h2>
+                        <p class="text-base font-semibold mt-2 text-slate-700 max-w-md">
+                            Welcome to your high-expression canvas. Ask questions, construct ideas, and build grand
+                            designs.
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- CHAT INPUT PANEL -->
+                <div
+                    class="bg-violet-200 border-2 border-slate-900 shadow-[4px_4px_0px_#1e1b18] rounded-2xl p-3 shrink-0">
+                    <div class="flex items-center gap-3">
+                        <input id="messageInput" type="text" placeholder="Express your thought here..."
+                            autocomplete="off"
+                            class="w-full max-input rounded-xl px-4 py-3 text-sm text-slate-900 font-medium placeholder-slate-500 focus:outline-none" />
+                        <button id="sendButton" onclick="sendMessage()"
+                            class="max-btn-primary flex items-center gap-2 px-6 py-3 rounded-xl shrink-0 font-bold text-sm">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span id="sendButtonText">Hit it!</span>
+                        </button>
+                    </div>
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let currentSessionId = null;
+
+        /* MARKDOWN + HIGHLIGHT.JS SETUP */
+        const mdRenderer = new marked.Renderer();
+        mdRenderer.code = function (code, infostring) {
+            const lang = (infostring || "").trim().split(/\s+/)[0];
+            const validLang = lang && hljs.getLanguage(lang) ? lang : null;
+            const highlighted = validLang
+                ? hljs.highlight(code, { language: validLang }).value
+                : hljs.highlightAuto(code).value;
+            const langLabel = validLang || "code";
+
+            return `
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <span>${escapeHtml(langLabel)}</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fa-regular fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <pre><code class="hljs">${highlighted}</code></pre>
+                </div>
+            `;
+        };
+
+        marked.use({ renderer: mdRenderer });
+
+        function copyCode(button) {
+            const codeBlock = button.closest(".code-block").querySelector("code");
+            navigator.clipboard.writeText(codeBlock.innerText).then(() => {
+                const original = button.innerHTML;
+                button.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+                setTimeout(() => { button.innerHTML = original; }, 1500);
+            }).catch(console.error);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement("div");
+            div.innerText = text ?? "";
+            return div.innerHTML;
+        }
+
+        /* SESSION MANAGEMENT */
+        async function loadSessions() {
+            const sessionList = document.getElementById("sessionList");
+            try {
+                const response = await fetch("/sessions");
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+
+                sessionList.innerHTML = "";
+                if (!data.sessions || data.sessions.length === 0) {
+                    sessionList.innerHTML = `<div class="text-xs font-semibold text-slate-500 px-2">No archives recorded yet</div>`;
+                    return;
+                }
+
+                data.sessions.forEach(session => {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = `session-item w-full text-left px-3 py-2.5 rounded-xl text-sm text-slate-900 font-semibold`;
+                    button.dataset.sessionId = session.session_id;
+                    button.innerHTML = `
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <i class="fa-solid fa-bookmark text-rose-600 text-xs shrink-0"></i>
+                            <span class="truncate">${escapeHtml(session.title || "Untitled Session")}</span>
+                        </div>
+                    `;
+                    button.addEventListener("click", () => loadSession(session.session_id));
+                    sessionList.appendChild(button);
+                });
+
+                highlightCurrentSession();
+            } catch (error) {
+                console.error("Failed to load sessions:", error);
+                sessionList.innerHTML = `<div class="text-xs text-red-600 font-bold px-2">Unable to load sessions</div>`;
+            }
+        }
+
+        function highlightCurrentSession() {
+            document.querySelectorAll(".session-item").forEach(item => {
+                if (item.dataset.sessionId === currentSessionId) {
+                    item.classList.add("active-session");
+                } else {
+                    item.classList.remove("active-session");
+                }
+            });
+        }
+
+        async function loadSession(sessionId) {
+            const chatMessages = document.getElementById("chatMessages");
+            try {
+                chatMessages.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-slate-800 font-bold gap-2">
+                        <i class="fa-solid fa-spinner fa-spin text-xl text-indigo-600"></i>
+                        <span>Retrieving canvas...</span>
+                    </div>
+                `;
+
+                const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}`);
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+
+                currentSessionId = data.session_id || sessionId;
+                chatMessages.innerHTML = "";
+
+                if (!data.messages || data.messages.length === 0) {
+                    showWelcomeMessage();
+                } else {
+                    data.messages.forEach(message => {
+                        if (message.role === "user") addUserMessage(message.content);
+                        if (message.role === "assistant") addAIMessage(message.content);
+                    });
+                }
+
+                highlightCurrentSession();
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (error) {
+                console.error("Failed to load session:", error);
+                chatMessages.innerHTML = `
+                    <div class="flex flex-col justify-center items-center h-full text-red-600 font-bold">
+                        <i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i>
+                        <span>Failed to load selected session.</span>
+                    </div>
+                `;
+            }
+        }
+
+        function showWelcomeMessage() {
+            document.getElementById("chatMessages").innerHTML = `
+                <div id="welcomeMessage" class="flex flex-col justify-center items-center h-full text-center my-auto">
+                    <div class="w-20 h-20 rounded-2xl bg-amber-400 border-3 border-slate-900 shadow-[5px_5px_0px_#1e1b18] flex items-center justify-center mb-4 text-slate-900">
+                        <i class="fa-solid fa-palette text-4xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-black text-slate-900 font-serif-title">
+                        More is More.
+                    </h2>
+                    <p class="text-base font-semibold mt-2 text-slate-700 max-w-md">
+                        Welcome to your high-expression canvas. Ask questions, construct ideas, and build grand designs.
+                    </p>
+                </div>
+            `;
+        }
+
+        function addUserMessage(message) {
+            const chatMessages = document.getElementById("chatMessages");
+            const userMessage = document.createElement("div");
+            userMessage.className = "chat-user-message";
+            userMessage.innerText = message || "";
+            chatMessages.appendChild(userMessage);
+        }
+
+        function addAIMessage(message) {
+            const chatMessages = document.getElementById("chatMessages");
+            const aiMessage = document.createElement("div");
+            aiMessage.className = "chat-ai-message";
+
+            const mdWrapper = document.createElement("div");
+            mdWrapper.className = "md-content prose prose-sm max-w-none";
+            mdWrapper.innerHTML = marked.parse(message || "");
+
+            aiMessage.appendChild(mdWrapper);
+            chatMessages.appendChild(aiMessage);
+        }
+
+        function startNewChat() {
+            currentSessionId = null;
+            showWelcomeMessage();
+            highlightCurrentSession();
+            const input = document.getElementById("messageInput");
+            input.value = "";
+            input.focus();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("messageInput");
+            const chatMessages = document.getElementById("chatMessages");
+            const sendButton = document.getElementById("sendButton");
+            const sendButtonText = document.getElementById("sendButtonText");
+            const welcomeMessage = document.getElementById("welcomeMessage");
+
+            const message = input.value.trim();
+            if (!message) return;
+
+            if (welcomeMessage) welcomeMessage.remove();
+
+            sendButton.disabled = true;
+            sendButton.classList.add("opacity-50", "cursor-not-allowed");
+            sendButtonText.innerText = "Processing...";
+
+            addUserMessage(message);
+            input.value = "";
+
+            const aiMessage = document.createElement("div");
+            aiMessage.className = "chat-ai-message";
+            aiMessage.innerHTML = `
+                <div class="flex items-center gap-2 text-slate-900 font-bold">
+                    <i class="fa-solid fa-spinner fa-spin text-emerald-600"></i>
+                    <span class="text-sm">Synthesizing...</span>
+                </div>
+            `;
+            chatMessages.appendChild(aiMessage);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: message, session_id: currentSessionId })
+                });
+
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+
+                if (data.session_id) currentSessionId = data.session_id;
+
+                aiMessage.innerHTML = "";
+                const mdWrapper = document.createElement("div");
+                mdWrapper.className = "md-content prose prose-sm max-w-none";
+                mdWrapper.innerHTML = marked.parse(data.response || "");
+                aiMessage.appendChild(mdWrapper);
+
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                await loadSessions();
+            } catch (error) {
+                console.error("Chat request failed:", error);
+                aiMessage.className = "chat-ai-message border-2 border-red-600 bg-red-100 text-red-900 font-bold";
+                aiMessage.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span>An error occurred while transmitting your query.</span>
+                    </div>
+                `;
+            }
+
+            sendButton.disabled = false;
+            sendButton.classList.remove("opacity-50", "cursor-not-allowed");
+            sendButtonText.innerText = "Dispatch";
+            input.focus();
+        }
+
+        document.getElementById("messageInput").addEventListener("keydown", function (event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loadSessions();
+            document.getElementById("messageInput").focus();
+        });
+    </script>
+</body>
+
+</html>

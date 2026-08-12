@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Assistant - 8-Bit Edition</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+
+    <!-- Retro Pixel Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+
+    <!-- NES.css (8-bit CSS Framework) -->
+    <link href="https://unpkg.com/nes.css@latest/css/nes.min.css" rel="stylesheet" />
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Markdown Renderer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+
+    <!-- Syntax Highlighting -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai-sublime.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        :root {
+            --pixel-bg: #00b0ad;
+            --pixel-window-bg: #e6dbff;
+            --pixel-header-purple: #7a3ee8;
+            --pixel-orange: #ff9d00;
+            --pixel-pink: #ff2a8d;
+            --pixel-dark: #1e122d;
+            --pixel-border: #120b1c;
+        }
+
+        body {
+            background-color: var(--pixel-bg);
+            /* Pixel Grid Lines matching the image */
+            background-image:
+                linear-gradient(to right, rgba(255, 255, 255, 0.25) 2px, transparent 2px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.25) 2px, transparent 2px);
+            background-size: 32px 32px;
+            font-family: 'Press Start 2P', cursive;
+            color: var(--pixel-dark);
+            image-rendering: pixelated;
+        }
+
+        .pixel-font-body {
+            font-family: 'VT323', monospace;
+            font-size: 1.25rem;
+            line-height: 1.2;
+        }
+
+        /* -----------------------------------
+           PIXEL CONTAINER WINDOWS
+        ----------------------------------- */
+        .pixel-window {
+            background-color: #ffffff;
+            border: 4px solid var(--pixel-border);
+            box-shadow: 6px 6px 0px var(--pixel-border);
+            position: relative;
+        }
+
+        .pixel-header {
+            background-color: var(--pixel-header-purple);
+            color: #ffffff;
+            border-bottom: 4px solid var(--pixel-border);
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .pixel-btn-close {
+            background-color: var(--pixel-pink);
+            border: 2px solid var(--pixel-border);
+            box-shadow: 2px 2px 0px var(--pixel-border);
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .pixel-btn-close:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px;
+        }
+
+        /* -----------------------------------
+           CUSTOM SCROLLBAR
+        ----------------------------------- */
+        .custom-scroll::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: var(--pixel-orange);
+            border: 3px solid var(--pixel-border);
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #d1c4e9;
+            border-left: 3px solid var(--pixel-border);
+        }
+
+        /* -----------------------------------
+           CHAT BUBBLES
+        ----------------------------------- */
+        .chat-user-message {
+            align-self: flex-end;
+            background-color: var(--pixel-orange);
+            color: #120b1c;
+            border: 3px solid var(--pixel-border);
+            box-shadow: 4px 4px 0px var(--pixel-border);
+            padding: 10px 14px;
+            max-width: 85%;
+            word-break: break-word;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .chat-ai-message {
+            align-self: flex-start;
+            background-color: #e6d5ff;
+            color: #120b1c;
+            border: 3px solid var(--pixel-border);
+            box-shadow: 4px 4px 0px var(--pixel-border);
+            padding: 12px 16px;
+            max-width: 88%;
+            word-break: break-word;
+        }
+
+        /* -----------------------------------
+           SESSION ITEMS
+        ----------------------------------- */
+        .session-item {
+            background-color: #ffffff;
+            border: 3px solid var(--pixel-border);
+            box-shadow: 3px 3px 0px var(--pixel-border);
+            padding: 8px 10px;
+            font-size: 9px;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .session-item:hover {
+            background-color: var(--pixel-orange);
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px var(--pixel-border);
+        }
+
+        .session-item.active-session {
+            background-color: var(--pixel-pink) !important;
+            color: #ffffff !important;
+        }
+
+        /* -----------------------------------
+           MARKDOWN OVERRIDES
+        ----------------------------------- */
+        .md-content {
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            line-height: 1.3;
+        }
+
+        .md-content p {
+            margin-bottom: 0.5em;
+        }
+
+        .md-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .md-content code {
+            background-color: #120b1c;
+            color: #00ffcc;
+            padding: 2px 6px;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+        }
+
+        .md-content .code-block {
+            border: 3px solid var(--pixel-border);
+            box-shadow: 3px 3px 0px var(--pixel-border);
+            margin: 0.8em 0;
+            background-color: #120b1c;
+        }
+
+        .md-content .code-block-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 8px;
+            background-color: var(--pixel-header-purple);
+            color: #ffffff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            border-bottom: 2px solid var(--pixel-border);
+        }
+
+        .md-content .copy-btn {
+            background-color: var(--pixel-orange);
+            color: #120b1c;
+            border: 2px solid var(--pixel-border);
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            padding: 2px 6px;
+            cursor: pointer;
+        }
+
+        .md-content .copy-btn:active {
+            transform: translate(1px, 1px);
+        }
+
+        .md-content .code-block pre {
+            margin: 0;
+            padding: 10px;
+            overflow-x: auto;
+            background-color: transparent;
+        }
+
+        .md-content ul,
+        .md-content ol {
+            margin: 0.5em 0;
+            padding-left: 1.2em;
+        }
+
+        .md-content ul {
+            list-style-type: square;
+        }
+
+        .md-content ol {
+            list-style-type: decimal;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex items-center justify-center p-2 md:p-4 overflow-hidden">
+
+    <!-- MAIN APP WINDOW -->
+    <div class="w-full max-w-6xl h-[96vh] pixel-window flex flex-col overflow-hidden">
+
+        <!-- TITLE BAR -->
+        <header class="pixel-header shrink-0">
+            <div class="flex items-center gap-2">
+                <i class="nes-icon coin is-small"></i>
+                <span class="text-xs md:text-sm font-bold tracking-widest">VIRTUAL.DREAM // CHAT_OS</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="pixel-btn-close">_</div>
+                <div class="pixel-btn-close">□</div>
+                <div class="pixel-btn-close">X</div>
+            </div>
+        </header>
+
+        <!-- APP BODY GRID -->
+        <div class="grid grid-cols-12 gap-3 p-3 flex-1 min-h-0 bg-[#e0f7fa]">
+
+            <!-- LEFT SIDEBAR: MEMORY / CHAT LOGS -->
+            <aside class="col-span-12 md:col-span-4 lg:col-span-3 flex flex-col min-h-0 gap-3">
+
+                <!-- USER AVATAR BOX -->
+                <div class="pixel-window p-3 flex items-center gap-3 bg-[#fff0f5] shrink-0">
+                    <div
+                        class="w-10 h-10 bg-[#ff2a8d] border-2 border-[#120b1c] flex items-center justify-center text-white shrink-0">
+                        <i class="nes-octocat animate"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="text-[10px] font-bold truncate">PLAYER_1</div>
+                        <div class="text-[8px] text-[#ff9d00] font-bold">LVL. 99 AI</div>
+                    </div>
+                </div>
+
+                <!-- NEW CHAT BUTTON -->
+                <button id="newChatButton" onclick="startNewChat()"
+                    class="nes-btn is-warning w-full text-[10px] shrink-0 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>NEW GAME</span>
+                </button>
+
+                <!-- LOGS LABEL -->
+                <div class="text-[9px] font-bold text-[#120b1c] uppercase tracking-wider shrink-0 px-1">
+                    &gt; SAVED_SLOTS:
+                </div>
+
+                <!-- SESSION LIST -->
+                <div id="sessionList" class="flex-1 min-h-0 overflow-y-auto custom-scroll space-y-2 pr-1">
+                    <div class="text-[9px] text-gray-600 p-1">Loading memory slots...</div>
+                </div>
+
+            </aside>
+
+            <!-- RIGHT MAIN CHAT AREA -->
+            <main class="col-span-12 md:col-span-8 lg:col-span-9 flex flex-col h-full min-h-0 gap-3">
+
+                <!-- CHAT MESSAGES DISPLAY -->
+                <div id="chatMessages"
+                    class="pixel-window p-4 flex-1 min-h-0 space-y-4 flex flex-col overflow-y-auto custom-scroll bg-[#ffffff]">
+
+                    <!-- WELCOME PLACEHOLDER -->
+                    <div id="welcomeMessage"
+                        class="flex flex-col justify-center items-center h-full text-center my-auto p-4 space-y-4">
+                        <i class="nes-charmander"></i>
+                        <h2 class="text-sm md:text-base font-bold text-[#7a3ee8]">
+                            PRESS START TO CHAT!
+                        </h2>
+                        <p class="pixel-font-body text-base max-w-sm text-gray-700">
+                            Select a saved slot or send a query below to initiate transmission.
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- CHAT INPUT PANEL -->
+                <div class="pixel-window p-2 bg-[#fff0f5] shrink-0 flex items-center gap-2">
+                    <input id="messageInput" type="text" placeholder="Type prompt here..." autocomplete="off"
+                        class="nes-input is-dark flex-1 text-[10px] md:text-xs" style="margin-bottom: 0px;" />
+                    <button id="sendButton" onclick="sendMessage()" class="nes-btn is-primary text-[10px] shrink-0">
+                        <span id="sendButtonText">SEND</span>
+                    </button>
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT ENGINE -->
+    <script>
+        let currentSessionId = null;
+
+        /* MARKDOWN & SYNTAX HIGHLIGHTING */
+        const mdRenderer = new marked.Renderer();
+        mdRenderer.code = function (code, infostring) {
+            const lang = (infostring || "").trim().split(/\s+/)[0];
+            const validLang = lang && hljs.getLanguage(lang) ? lang : null;
+            const highlighted = validLang
+                ? hljs.highlight(code, { language: validLang }).value
+                : hljs.highlightAuto(code).value;
+            const langLabel = validLang || "PIXEL_CODE";
+
+            return `
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <span>[${escapeHtml(langLabel)}]</span>
+                        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+                    </div>
+                    <pre><code class="hljs">${highlighted}</code></pre>
+                </div>
+            `;
+        };
+
+        marked.use({ renderer: mdRenderer });
+
+        function copyCode(button) {
+            const codeBlock = button.closest(".code-block").querySelector("code");
+            navigator.clipboard.writeText(codeBlock.innerText).then(() => {
+                const original = button.innerHTML;
+                button.innerHTML = "DONE!";
+                setTimeout(() => { button.innerHTML = original; }, 1500);
+            }).catch(console.error);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement("div");
+            div.innerText = text ?? "";
+            return div.innerHTML;
+        }
+
+        /* SESSION MANAGEMENT */
+        async function loadSessions() {
+            const sessionList = document.getElementById("sessionList");
+            try {
+                const response = await fetch("/sessions");
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+
+                sessionList.innerHTML = "";
+                if (!data.sessions || data.sessions.length === 0) {
+                    sessionList.innerHTML = `<div class="text-[8px] text-gray-500 p-1">[EMPTY_SLOTS]</div>`;
+                    return;
+                }
+
+                data.sessions.forEach(session => {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = `session-item w-full text-left truncate flex items-center gap-2`;
+                    button.dataset.sessionId = session.session_id;
+                    button.innerHTML = `
+                        <i class="nes-icon tiny star"></i>
+                        <span class="truncate">${escapeHtml(session.title || "SLOT_LOG")}</span>
+                    `;
+                    button.addEventListener("click", () => loadSession(session.session_id));
+                    sessionList.appendChild(button);
+                });
+
+                highlightCurrentSession();
+            } catch (error) {
+                console.error("Failed to load sessions:", error);
+                sessionList.innerHTML = `<div class="text-[8px] text-red-600 p-1">ERR: LOAD_FAILED</div>`;
+            }
+        }
+
+        function highlightCurrentSession() {
+            document.querySelectorAll(".session-item").forEach(item => {
+                if (item.dataset.sessionId === currentSessionId) {
+                    item.classList.add("active-session");
+                } else {
+                    item.classList.remove("active-session");
+                }
+            });
+        }
+
+        async function loadSession(sessionId) {
+            const chatMessages = document.getElementById("chatMessages");
+            try {
+                chatMessages.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-[10px] font-bold gap-2 text-[#7a3ee8]">
+                        <i class="nes-icon coin is-small animate-bounce"></i>
+                        <span>LOADING_DATA...</span>
+                    </div>
+                `;
+
+                const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}`);
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+
+                currentSessionId = data.session_id || sessionId;
+                chatMessages.innerHTML = "";
+
+                if (!data.messages || data.messages.length === 0) {
+                    showWelcomeMessage();
+                } else {
+                    data.messages.forEach(message => {
+                        if (message.role === "user") addUserMessage(message.content);
+                        if (message.role === "assistant") addAIMessage(message.content);
+                    });
+                }
+
+                highlightCurrentSession();
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (error) {
+                console.error("Failed to load session:", error);
+                chatMessages.innerHTML = `
+                    <div class="flex flex-col justify-center items-center h-full text-red-600 text-[10px] font-bold">
+                        <span>[ERR: STREAM_READ_FAILURE]</span>
+                    </div>
+                `;
+            }
+        }
+
+        function showWelcomeMessage() {
+            document.getElementById("chatMessages").innerHTML = `
+                <div id="welcomeMessage" class="flex flex-col justify-center items-center h-full text-center my-auto p-4 space-y-4">
+                    <i class="nes-charmander"></i>
+                    <h2 class="text-sm md:text-base font-bold text-[#7a3ee8]">
+                        PRESS START TO CHAT!
+                    </h2>
+                    <p class="pixel-font-body text-base max-w-sm text-gray-700">
+                        Select a saved slot or send a query below to initiate transmission.
+                    </p>
+                </div>
+            `;
+        }
+
+        function addUserMessage(message) {
+            const chatMessages = document.getElementById("chatMessages");
+            const userMessage = document.createElement("div");
+            userMessage.className = "chat-user-message";
+            userMessage.innerText = message || "";
+            chatMessages.appendChild(userMessage);
+        }
+
+        function addAIMessage(message) {
+            const chatMessages = document.getElementById("chatMessages");
+            const aiMessage = document.createElement("div");
+            aiMessage.className = "chat-ai-message";
+
+            const mdWrapper = document.createElement("div");
+            mdWrapper.className = "md-content";
+            mdWrapper.innerHTML = marked.parse(message || "");
+
+            aiMessage.appendChild(mdWrapper);
+            chatMessages.appendChild(aiMessage);
+        }
+
+        function startNewChat() {
+            currentSessionId = null;
+            showWelcomeMessage();
+            highlightCurrentSession();
+            const input = document.getElementById("messageInput");
+            input.value = "";
+            input.focus();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("messageInput");
+            const chatMessages = document.getElementById("chatMessages");
+            const sendButton = document.getElementById("sendButton");
+            const sendButtonText = document.getElementById("sendButtonText");
+            const welcomeMessage = document.getElementById("welcomeMessage");
+
+            const message = input.value.trim();
+            if (!message) return;
+
+            if (welcomeMessage) welcomeMessage.remove();
+
+            sendButton.disabled = true;
+            sendButtonText.innerText = "WAIT";
+
+            addUserMessage(message);
+            input.value = "";
+
+            const aiMessage = document.createElement("div");
+            aiMessage.className = "chat-ai-message";
+            aiMessage.innerHTML = `
+                <div class="flex items-center gap-2 text-[10px]">
+                    <i class="nes-icon is-small heart"></i>
+                    <span>THINKING...</span>
+                </div>
+            `;
+            chatMessages.appendChild(aiMessage);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: message, session_id: currentSessionId })
+                });
+
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+
+                if (data.session_id) currentSessionId = data.session_id;
+
+                aiMessage.innerHTML = "";
+                const mdWrapper = document.createElement("div");
+                mdWrapper.className = "md-content";
+                mdWrapper.innerHTML = marked.parse(data.response || "");
+                aiMessage.appendChild(mdWrapper);
+
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                await loadSessions();
+            } catch (error) {
+                console.error("Chat request failed:", error);
+                aiMessage.className = "chat-ai-message bg-red-200 text-red-800";
+                aiMessage.innerHTML = `<span class="text-[9px] font-bold">[SIGNAL_LOST_ERROR]</span>`;
+            }
+
+            sendButton.disabled = false;
+            sendButtonText.innerText = "SEND";
+            input.focus();
+        }
+
+        document.getElementById("messageInput").addEventListener("keydown", function (event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loadSessions();
+            document.getElementById("messageInput").focus();
+        });
+    </script>
+</body>
+
+</html>

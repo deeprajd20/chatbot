@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Micrographics Neural Terminal [MONO_FLOAT]</title>
+    <title>AI Micrographics Interface [SYS_V1.0_MONO]</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
@@ -28,23 +28,24 @@
 
     <style>
         :root {
-            --bg-dark: #070709;
-            --hud-line: rgba(255, 255, 255, 0.2);
-            --hud-line-bright: #ffffff;
+            --hud-bg: #0a0a0a;
+            --hud-panel-bg: #121212;
+            --hud-border: rgba(255, 255, 255, 0.2);
+            --hud-border-bright: #ffffff;
             --hud-text: #e0e0e0;
-            --hud-dim: #606065;
+            --hud-text-dim: #707070;
         }
 
         body {
-            background-color: var(--bg-dark);
+            background-color: var(--hud-bg);
             color: var(--hud-text);
             font-family: 'JetBrains Mono', monospace;
-            letter-spacing: 0.02em;
             background-image:
-                radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+                radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
                 linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
                 linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 32px 32px, 64px 64px, 64px 64px;
+            background-size: 24px 24px, 48px 48px, 48px 48px;
+            letter-spacing: 0.03em;
         }
 
         .font-header {
@@ -55,111 +56,117 @@
             font-family: 'Share Tech Mono', monospace;
         }
 
-        /* Floating Component Base Style */
-        .float-node {
-            background-color: rgba(14, 14, 18, 0.85);
-            border: 1px solid var(--hud-line);
-            backdrop-filter: blur(8px);
+        /* -----------------------------------
+           HUD CONTAINER & MICRO-BORDER STYLING
+        ----------------------------------- */
+        .hud-border {
+            border: 1px solid var(--hud-border);
             position: relative;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-            transition: all 0.2s ease-in-out;
+            background-color: var(--hud-panel-bg);
         }
 
-        .float-node:hover {
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        /* Micro Crosshair Corner Anchors */
-        .corner-anchor::before,
-        .corner-anchor::after {
-            content: '+';
+        .hud-corner-brackets::before,
+        .hud-corner-brackets::after {
+            content: '';
             position: absolute;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 10px;
-            color: var(--hud-line-bright);
-            line-height: 1;
+            width: 8px;
+            height: 8px;
+            border-color: var(--hud-border-bright);
             pointer-events: none;
         }
 
-        .corner-anchor::before {
-            top: -6px;
-            left: -6px;
+        .hud-corner-brackets::before {
+            top: -1px;
+            left: -1px;
+            border-top: 2px solid var(--hud-border-bright);
+            border-left: 2px solid var(--hud-border-bright);
         }
 
-        .corner-anchor::after {
-            bottom: -6px;
-            right: -6px;
+        .hud-corner-brackets::after {
+            bottom: -1px;
+            right: -1px;
+            border-bottom: 2px solid var(--hud-border-bright);
+            border-right: 2px solid var(--hud-border-bright);
         }
 
-        /* Floating Interactive Buttons */
+        /* -----------------------------------
+           BUTTONS & INPUTS
+        ----------------------------------- */
         .hud-btn {
-            background-color: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--hud-line-bright);
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--hud-border-bright);
             color: #ffffff;
             font-family: 'Chakra Petch', sans-serif;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             transition: all 0.15s ease-in-out;
+            position: relative;
         }
 
         .hud-btn:hover {
             background-color: #ffffff;
             color: #000000;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
         }
 
-        /* Floating Inputs */
+        .hud-btn:active {
+            transform: scale(0.98);
+        }
+
         .hud-input {
-            background-color: rgba(5, 5, 5, 0.9);
-            border: 1px solid var(--hud-line);
+            background-color: #050505;
+            border: 1px solid var(--hud-border);
             color: #ffffff;
             font-family: 'JetBrains Mono', monospace;
         }
 
         .hud-input:focus {
             outline: none;
-            border-color: var(--hud-line-bright);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            border-color: var(--hud-border-bright);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
         }
 
-        /* Modular Chat Bubbles */
+        /* -----------------------------------
+           CHAT BUBBLES
+        ----------------------------------- */
         .chat-user-msg {
             align-self: flex-end;
-            background-color: rgba(255, 255, 255, 0.08);
-            border: 1px solid #ffffff;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--hud-border-bright);
             color: #ffffff;
-            padding: 8px 12px;
-            max-width: 80%;
-            font-size: 0.8rem;
+            padding: 10px 14px;
+            max-width: 85%;
+            font-size: 0.85rem;
             position: relative;
         }
 
         .chat-ai-msg {
             align-self: flex-start;
-            background-color: rgba(18, 18, 22, 0.9);
-            border: 1px solid var(--hud-line);
+            background-color: #161616;
+            border: 1px solid var(--hud-border);
             border-left: 3px solid #ffffff;
-            padding: 10px 14px;
-            max-width: 88%;
-            font-size: 0.8rem;
+            padding: 12px 16px;
+            max-width: 90%;
+            font-size: 0.85rem;
         }
 
-        /* Floating Session Badges */
+        /* -----------------------------------
+           SESSION ITEMS
+        ----------------------------------- */
         .session-item {
             background-color: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--hud-line);
-            padding: 6px 8px;
-            font-size: 0.7rem;
+            border: 1px solid var(--hud-border);
+            padding: 8px 10px;
+            font-size: 0.75rem;
             cursor: pointer;
             transition: all 0.15s ease;
         }
 
         .session-item:hover {
             background-color: rgba(255, 255, 255, 0.1);
-            border-color: #ffffff;
+            border-color: var(--hud-border-bright);
             color: #ffffff;
-            transform: translateX(2px);
         }
 
         .session-item.active-session {
@@ -168,9 +175,11 @@
             font-weight: 700;
         }
 
-        /* Custom Scrollbar */
+        /* -----------------------------------
+           CUSTOM SCROLLBAR
+        ----------------------------------- */
         .custom-scroll::-webkit-scrollbar {
-            width: 3px;
+            width: 4px;
         }
 
         .custom-scroll::-webkit-scrollbar-thumb {
@@ -178,13 +187,15 @@
         }
 
         .custom-scroll::-webkit-scrollbar-track {
-            background: transparent;
+            background: rgba(0, 0, 0, 0.5);
         }
 
-        /* Markdown Overrides */
+        /* -----------------------------------
+           MARKDOWN OVERRIDES
+        ----------------------------------- */
         .md-content p {
-            margin-bottom: 0.5em;
-            line-height: 1.4;
+            margin-bottom: 0.6em;
+            line-height: 1.5;
         }
 
         .md-content p:last-child {
@@ -192,181 +203,217 @@
         }
 
         .md-content code {
-            background-color: #000;
-            color: #fff;
-            padding: 2px 4px;
+            background-color: #000000;
+            color: #ffffff;
+            padding: 2px 6px;
             font-family: 'Share Tech Mono', monospace;
             border: 1px solid rgba(255, 255, 255, 0.3);
-            font-size: 0.8em;
+            font-size: 0.85em;
         }
 
         .md-content .code-block {
-            border: 1px solid var(--hud-line);
-            margin: 0.6em 0;
-            background-color: #000;
+            border: 1px solid var(--hud-border);
+            margin: 0.8em 0;
+            background-color: #050505;
         }
 
         .md-content .code-block-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 3px 8px;
+            padding: 4px 10px;
             background-color: rgba(255, 255, 255, 0.1);
-            color: #fff;
+            color: #ffffff;
             font-family: 'Chakra Petch', sans-serif;
-            font-size: 0.65rem;
-            border-bottom: 1px solid var(--hud-line);
+            font-size: 0.7rem;
+            border-bottom: 1px solid var(--hud-border);
+            text-transform: uppercase;
         }
 
         .md-content .copy-btn {
             background-color: transparent;
-            color: #fff;
-            border: 1px solid #fff;
-            font-size: 0.6rem;
-            padding: 1px 6px;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+            font-size: 0.65rem;
+            padding: 2px 8px;
             cursor: pointer;
+            text-transform: uppercase;
         }
 
         .md-content .copy-btn:hover {
-            background-color: #fff;
-            color: #000;
+            background-color: #ffffff;
+            color: #000000;
         }
 
         .md-content .code-block pre {
             margin: 0;
-            padding: 8px;
+            padding: 12px;
             overflow-x: auto;
+        }
+
+        .md-content ul,
+        .md-content ol {
+            margin: 0.5em 0;
+            padding-left: 1.2em;
+        }
+
+        .md-content ul {
+            list-style-type: square;
+        }
+
+        .md-content ol {
+            list-style-type: decimal;
         }
     </style>
 </head>
 
-<body class="h-screen w-screen p-3 md:p-5 flex flex-col justify-between overflow-hidden relative select-none">
+<body class="h-screen flex items-center justify-center p-2 md:p-4 overflow-hidden relative">
 
-    <!-- FLOATING BACKGROUND DECORATIVE MICROGRAPHICS SCATTERED CHIPS -->
-    <div class="absolute top-2 left-10 text-[8px] font-mono-tech text-[var(--hud-dim)] pointer-events-none">
-        [ARCHIVE_LOG] // REF: 0092-B // MODE: DUAL_NODE
-    </div>
-    <div class="absolute top-12 right-8 text-[8px] font-mono-tech text-[var(--hud-dim)] pointer-events-none">
-        + SYS_VOLTAGE: 12.8V // TEMP: 22°C // CYCLE: 40
-    </div>
-    <div class="absolute bottom-12 left-6 text-[8px] font-mono-tech text-[var(--hud-dim)] pointer-events-none">
-        (ANALOG) [007] // VECTOR_RST: STABLE
-    </div>
-    <div class="absolute bottom-4 right-16 text-[8px] font-mono-tech text-[var(--hud-dim)] pointer-events-none">
-        SW_VER: 2026.8.12 // TIME_ENGINE (SYNC)
-    </div>
+    <!-- MAIN INTERFACE HUD CONTAINER -->
+    <div
+        class="w-full max-w-7xl h-[96vh] hud-border hud-corner-brackets flex flex-col overflow-hidden p-3 md:p-4 relative">
 
-    <!-- 1. TOP FLOATING NAVIGATION / HEADER STRIP -->
-    <header class="flex flex-wrap items-center justify-between gap-3 shrink-0 z-10">
-        <!-- Brand Chip -->
-        <div class="float-node corner-anchor px-3 py-1.5 flex items-center gap-2">
-            <div class="w-5 h-5 border border-white flex items-center justify-center text-white text-[10px]">
-                <i class="fa-solid fa-crosshairs"></i>
-            </div>
-            <span class="font-header text-sm font-bold tracking-widest text-white">MICROGRAPHICS</span>
-            <span class="text-[9px] px-1 bg-white text-black font-mono-tech font-bold">VOL.1</span>
+        <!-- HUD DECORATIVE OVERLAYS -->
+        <div
+            class="absolute top-1 right-3 text-[9px] font-mono-tech text-[#707070] tracking-widest pointer-events-none select-none">
+            [SYS_STATE: ACTIVE] // FREQ: 142.800MHz // LATENCY: 04ms
         </div>
 
-        <!-- Scattered Floating Diagnostic Chips -->
-        <div class="hidden md:flex items-center gap-2 text-[9px] font-mono-tech">
-            <div class="float-node px-2.5 py-1 text-[var(--hud-dim)]">
-                TARGET: <span class="text-white font-bold">#SYS_0574</span>
-            </div>
-            <div class="float-node px-2.5 py-1 text-[var(--hud-dim)]">
-                LIB: <span class="text-white font-bold">150 ELEMENTS</span>
-            </div>
-            <div class="float-node px-2.5 py-1 text-[var(--hud-dim)]">
-                STATUS: <span class="text-white font-bold">[ONLINE]</span>
-            </div>
-        </div>
-
-        <!-- System Reset Button -->
-        <button onclick="startNewChat()"
-            class="hud-btn float-node corner-anchor px-3 py-1.5 text-xs flex items-center gap-1.5">
-            <i class="fa-solid fa-rotate text-[10px]"></i>
-            <span>INITIALIZE_NEW</span>
-        </button>
-    </header>
-
-    <!-- 2. MAIN FLOATING INTERFACE WORKSPACE -->
-    <div class="flex-1 my-3 grid grid-cols-12 gap-3 min-h-0 z-10">
-
-        <!-- LEFT: FLOATING LOG ARCHIVE (SIDEBAR) -->
-        <aside class="col-span-12 md:col-span-3 lg:col-span-2 flex flex-col min-h-0 gap-2">
-
-            <!-- Sidebar Title Label -->
-            <div
-                class="float-node px-2 py-1 flex items-center justify-between text-[9px] font-mono-tech text-[var(--hud-dim)]">
-                <span>&gt; ARCHIVE_LOGS</span>
-                <span>[009]</span>
-            </div>
-
-            <!-- Scrollable Session Chips Container -->
-            <div id="sessionList" class="flex-1 min-h-0 overflow-y-auto custom-scroll space-y-1.5 pr-0.5">
-                <div class="text-[9px] text-[var(--hud-dim)] p-1 font-mono-tech">SCANNING...</div>
-            </div>
-
-            <!-- Micro Diagnostic Dial -->
-            <div class="float-node p-2 text-[8px] font-mono-tech text-[var(--hud-dim)] space-y-1 hidden md:block">
-                <div class="flex justify-between border-b border-white/10 pb-0.5">
-                    <span>OVERRIDE</span>
-                    <span class="text-white">ACTIVE</span>
+        <!-- HEADER TERMINAL -->
+        <header class="flex items-center justify-between pb-3 border-b border-[rgba(255,255,255,0.2)] shrink-0 pt-1">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 border border-white flex items-center justify-center text-white text-xs">
+                    <i class="fa-solid fa-crosshairs"></i>
                 </div>
-                <div class="flex justify-between">
-                    <span>EPOCH</span>
-                    <span class="text-white">0830 / 0912</span>
-                </div>
-            </div>
-
-        </aside>
-
-        <!-- RIGHT: CHAT DISPLAY CANVAS & INPUT FIELD -->
-        <main class="col-span-12 md:col-span-9 lg:col-span-10 flex flex-col h-full min-h-0 gap-2">
-
-            <!-- FLOATING CHAT MESSAGES DISPLAY -->
-            <div id="chatMessages"
-                class="flex-1 min-h-0 overflow-y-auto custom-scroll space-y-2.5 pr-1 flex flex-col relative">
-
-                <!-- WELCOME FLOATING PLACEHOLDER -->
-                <div id="welcomeMessage"
-                    class="float-node corner-anchor m-auto p-6 flex flex-col items-center justify-center text-center space-y-2 max-w-sm">
-                    <div class="w-10 h-10 border border-white flex items-center justify-center text-white text-lg">
-                        <i class="fa-solid fa-microchip"></i>
-                    </div>
-                    <h2 class="font-header text-xs font-bold text-white tracking-widest">
-                        AWAITING_COMMAND_VECTOR
-                    </h2>
-                    <p class="text-[10px] text-[var(--hud-dim)] font-mono-tech">
-                        Select an archived log entry or initiate a prompt payload below.
+                <div>
+                    <h1
+                        class="font-header text-lg md:text-xl font-bold tracking-widest text-white flex items-center gap-2">
+                        <span>MICROGRAPHICS</span>
+                        <span class="text-xs px-1.5 py-0.5 bg-white text-black font-mono-tech">VOL.01</span>
+                    </h1>
+                    <p class="text-[10px] text-[#707070] font-mono-tech uppercase">
+                        NEURAL INTERFACE SYSTEM // EDITABLE DATA GRAPHICS
                     </p>
                 </div>
-
             </div>
 
-            <!-- FLOATING INPUT COMMAND BAR -->
-            <div class="float-node corner-anchor p-1.5 flex items-center gap-2 shrink-0">
-                <span class="text-xs text-white font-mono-tech pl-1.5">&gt;</span>
-                <input id="messageInput" type="text" placeholder="ENTER COMMAND OR DATA QUERY..." autocomplete="off"
-                    class="hud-input flex-1 px-3 py-1.5 text-xs font-mono-tech" />
-                <button id="sendButton" onclick="sendMessage()"
-                    class="hud-btn px-4 py-1.5 text-xs shrink-0 flex items-center gap-1.5">
-                    <span id="sendButtonText">EXECUTE</span>
-                    <i class="fa-solid fa-caret-right text-[10px]"></i>
+            <!-- STATUS INDICATORS -->
+            <div class="hidden md:flex items-center gap-6 text-[10px] font-mono-tech text-[#707070]">
+                <div>
+                    <span class="block text-[8px] opacity-60">TARGET_NODE</span>
+                    <span class="text-white font-bold">#SYS_0574</span>
+                </div>
+                <div>
+                    <span class="block text-[8px] opacity-60">CORE_MEMORY</span>
+                    <span class="text-white font-bold">150 ELEMENTS</span>
+                </div>
+                <div>
+                    <span class="block text-[8px] opacity-60">SIGNAL</span>
+                    <span class="text-white font-bold">[ONLINE]</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT GRID -->
+        <div class="grid grid-cols-12 gap-3 pt-3 flex-1 min-h-0">
+
+            <!-- LEFT TELEMETRY SIDEBAR -->
+            <aside class="col-span-12 md:col-span-4 lg:col-span-3 flex flex-col min-h-0 gap-3">
+
+                <!-- OPERATOR BADGE -->
+                <div class="hud-border p-2.5 flex items-center gap-3 bg-[#0d0d0d]">
+                    <div class="w-8 h-8 border border-white flex items-center justify-center text-white shrink-0">
+                        <i class="fa-solid fa-terminal text-xs"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="font-header text-xs font-bold text-white truncate">OPERATOR_007</div>
+                        <div class="text-[9px] font-mono-tech text-[#707070]">LOC: /DEV/TTY01</div>
+                    </div>
+                </div>
+
+                <!-- NEW SESSION BTN -->
+                <button id="newChatButton" onclick="startNewChat()"
+                    class="hud-btn py-2 px-3 w-full text-xs flex items-center justify-center gap-2 shrink-0">
+                    <i class="fa-solid fa-plus text-[10px]"></i>
+                    <span>INITIALIZE NEW LOG</span>
                 </button>
-            </div>
 
-        </main>
+                <!-- ARCHIVE LOGS -->
+                <div class="flex items-center justify-between text-[10px] font-mono-tech text-[#707070] px-1 shrink-0">
+                    <span>&gt; ARCHIVE_LOGS</span>
+                    <span>[SYS_REC]</span>
+                </div>
+
+                <!-- SESSION LIST -->
+                <div id="sessionList" class="flex-1 min-h-0 overflow-y-auto custom-scroll space-y-1.5 pr-1">
+                    <div class="text-[10px] text-[#707070] p-1 font-mono-tech">SCANNING LOG DATA...</div>
+                </div>
+
+                <!-- DECORATIVE HUD DIAGNOSTICS PANEL -->
+                <div
+                    class="hud-border p-2.5 text-[9px] font-mono-tech text-[#707070] space-y-1 bg-[#080808] shrink-0 hidden lg:block">
+                    <div class="flex justify-between border-b border-[rgba(255,255,255,0.15)] pb-1">
+                        <span>VOLTAGE: 12.8V</span>
+                        <span>TEMP: 22°C</span>
+                    </div>
+                    <div class="flex justify-between pt-1">
+                        <span>FUSION_CORE: OK</span>
+                        <span>CYCLE: 40</span>
+                    </div>
+                </div>
+
+            </aside>
+
+            <!-- RIGHT MAIN TERMINAL CHAT AREA -->
+            <main class="col-span-12 md:col-span-8 lg:col-span-9 flex flex-col h-full min-h-0 gap-3">
+
+                <!-- CHAT MESSAGES DISPLAY -->
+                <div id="chatMessages"
+                    class="hud-border p-4 flex-1 min-h-0 space-y-3 flex flex-col overflow-y-auto custom-scroll bg-[#0b0b0b] relative">
+
+                    <!-- WELCOME PLACEHOLDER -->
+                    <div id="welcomeMessage"
+                        class="flex flex-col justify-center items-center h-full text-center my-auto p-4 space-y-3">
+                        <div
+                            class="w-12 h-12 border border-white flex items-center justify-center text-white text-xl mb-1">
+                            <i class="fa-solid fa-microchip"></i>
+                        </div>
+                        <h2 class="font-header text-sm md:text-base font-bold text-white tracking-widest">
+                            SYSTEM READY // AWAITING COMMAND
+                        </h2>
+                        <p class="text-xs max-w-md text-[#707070] font-mono-tech">
+                            Select a telemetry log from memory or enter your command prompt below.
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- INPUT COMMAND BAR -->
+                <div class="hud-border p-2 bg-[#121212] flex items-center gap-2 shrink-0">
+                    <span class="text-xs text-white font-mono-tech pl-2">&gt;</span>
+                    <input id="messageInput" type="text" placeholder="ENTER COMMAND OR QUERY..." autocomplete="off"
+                        class="hud-input flex-1 px-3 py-2 text-xs font-mono-tech" />
+                    <button id="sendButton" onclick="sendMessage()"
+                        class="hud-btn px-4 py-2 text-xs shrink-0 flex items-center gap-2">
+                        <span id="sendButtonText">EXECUTE</span>
+                        <i class="fa-solid fa-caret-right text-[10px]"></i>
+                    </button>
+                </div>
+
+            </main>
+
+        </div>
+
+        <!-- FOOTER STATUS STRIP -->
+        <footer
+            class="mt-2 pt-2 border-t border-[rgba(255,255,255,0.15)] flex justify-between items-center text-[8px] font-mono-tech text-[#707070] shrink-0">
+            <div>MODE: EDITABLE VECTOR GRAPHICS LIBRARY // COMPONENTS: ACTIVE</div>
+            <div>STATUS: ONLINE // TIME ENGINE [SYNCING]</div>
+        </footer>
 
     </div>
 
-    <!-- 3. FOOTER MICRO STRIP -->
-    <footer
-        class="flex items-center justify-between text-[8px] font-mono-tech text-[var(--hud-dim)] shrink-0 z-10 px-1">
-        <div>MODE: FLOATING MICRO COMPONENTS // EDITABLE VECTOR LIBRARY</div>
-        <div>SYS_NODE: READY</div>
-    </footer>
-
-    <!-- JAVASCRIPT LOGIC ENGINE -->
+    <!-- JAVASCRIPT ENGINE -->
     <script>
         let currentSessionId = null;
 
@@ -378,7 +425,7 @@
             const highlighted = validLang
                 ? hljs.highlight(code, { language: validLang }).value
                 : hljs.highlightAuto(code).value;
-            const langLabel = validLang || "STREAM";
+            const langLabel = validLang || "DATA_STREAM";
 
             return `
                 <div class="code-block">
@@ -418,14 +465,14 @@
 
                 sessionList.innerHTML = "";
                 if (!data.sessions || data.sessions.length === 0) {
-                    sessionList.innerHTML = `<div class="text-[9px] text-[var(--hud-dim)] p-1 font-mono-tech">[NO_LOGS]</div>`;
+                    sessionList.innerHTML = `<div class="text-[10px] text-[#707070] p-1 font-mono-tech">[NO_LOGS_FOUND]</div>`;
                     return;
                 }
 
                 data.sessions.forEach(session => {
                     const button = document.createElement("button");
                     button.type = "button";
-                    button.className = `session-item float-node w-full text-left truncate flex items-center gap-1.5 font-mono-tech`;
+                    button.className = `session-item w-full text-left truncate flex items-center gap-2 font-mono-tech`;
                     button.dataset.sessionId = session.session_id;
                     button.innerHTML = `
                         <span class="text-white">&gt;</span>
@@ -438,7 +485,7 @@
                 highlightCurrentSession();
             } catch (error) {
                 console.error("Failed to load sessions:", error);
-                sessionList.innerHTML = `<div class="text-[9px] text-white p-1 font-mono-tech">ERR: READ_FAIL</div>`;
+                sessionList.innerHTML = `<div class="text-[10px] text-white p-1 font-mono-tech">ERR: SESSION_READ_FAIL</div>`;
             }
         }
 
@@ -458,7 +505,7 @@
                 chatMessages.innerHTML = `
                     <div class="flex items-center justify-center h-full text-xs font-mono-tech text-white gap-2">
                         <i class="fa-solid fa-spinner fa-spin"></i>
-                        <span>READING MEMORY...</span>
+                        <span>READING MEMORY BANK...</span>
                     </div>
                 `;
 
@@ -484,7 +531,7 @@
                 console.error("Failed to load session:", error);
                 chatMessages.innerHTML = `
                     <div class="flex flex-col justify-center items-center h-full text-white text-xs font-mono-tech">
-                        <span>[ERR: TELEMETRY_FAILURE]</span>
+                        <span>[ERR: TELEMETRY_READ_FAILURE]</span>
                     </div>
                 `;
             }
@@ -492,15 +539,15 @@
 
         function showWelcomeMessage() {
             document.getElementById("chatMessages").innerHTML = `
-                <div id="welcomeMessage" class="float-node corner-anchor m-auto p-6 flex flex-col items-center justify-center text-center space-y-2 max-w-sm">
-                    <div class="w-10 h-10 border border-white flex items-center justify-center text-white text-lg">
+                <div id="welcomeMessage" class="flex flex-col justify-center items-center h-full text-center my-auto p-4 space-y-3">
+                    <div class="w-12 h-12 border border-white flex items-center justify-center text-white text-xl mb-1">
                         <i class="fa-solid fa-microchip"></i>
                     </div>
-                    <h2 class="font-header text-xs font-bold text-white tracking-widest">
-                        AWAITING_COMMAND_VECTOR
+                    <h2 class="font-header text-sm md:text-base font-bold text-white tracking-widest">
+                        SYSTEM READY // AWAITING COMMAND
                     </h2>
-                    <p class="text-[10px] text-[var(--hud-dim)] font-mono-tech">
-                        Select an archived log entry or initiate a prompt payload below.
+                    <p class="text-xs max-w-md text-[#707070] font-mono-tech">
+                        Select a telemetry log from memory or enter your command prompt below.
                     </p>
                 </div>
             `;
@@ -509,7 +556,7 @@
         function addUserMessage(message) {
             const chatMessages = document.getElementById("chatMessages");
             const userMessage = document.createElement("div");
-            userMessage.className = "chat-user-msg float-node";
+            userMessage.className = "chat-user-msg";
             userMessage.innerText = message || "";
             chatMessages.appendChild(userMessage);
         }
@@ -517,7 +564,7 @@
         function addAIMessage(message) {
             const chatMessages = document.getElementById("chatMessages");
             const aiMessage = document.createElement("div");
-            aiMessage.className = "chat-ai-msg float-node";
+            aiMessage.className = "chat-ai-msg";
 
             const mdWrapper = document.createElement("div");
             mdWrapper.className = "md-content";
@@ -555,11 +602,11 @@
             input.value = "";
 
             const aiMessage = document.createElement("div");
-            aiMessage.className = "chat-ai-msg float-node";
+            aiMessage.className = "chat-ai-msg";
             aiMessage.innerHTML = `
                 <div class="flex items-center gap-2 text-xs text-white font-mono-tech">
                     <i class="fa-solid fa-spinner fa-spin"></i>
-                    <span>PROCESSING VECTOR...</span>
+                    <span>PROCESSING DATA VECTOR...</span>
                 </div>
             `;
             chatMessages.appendChild(aiMessage);
@@ -587,7 +634,7 @@
                 await loadSessions();
             } catch (error) {
                 console.error("Chat request failed:", error);
-                aiMessage.className = "chat-ai-msg float-node border-white text-white";
+                aiMessage.className = "chat-ai-msg border-white text-white";
                 aiMessage.innerHTML = `<span class="text-xs font-mono-tech">[SIGNAL_LOST_ERROR]</span>`;
             }
 

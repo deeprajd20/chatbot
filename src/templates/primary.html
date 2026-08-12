@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>AI Assistant Studio</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Markdown Renderer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+
+    <!-- Syntax Highlighting -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+
+        body {
+            background-color: #dce2fd;
+
+            font-family:
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                'Segoe UI',
+                Roboto,
+                Oxygen,
+                Ubuntu,
+                Cantarell,
+                sans-serif;
+        }
+
+
+        .stroke-border {
+            border: 2px solid #18181b;
+        }
+
+
+        /* -----------------------------------
+           CUSTOM SCROLLBAR
+        ----------------------------------- */
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+
+        /* -----------------------------------
+           SESSION ITEMS
+        ----------------------------------- */
+
+        .session-item {
+            transition:
+                background-color 0.15s ease,
+                border-color 0.15s ease,
+                transform 0.1s ease;
+        }
+
+
+        .session-item:hover {
+            transform: translateX(1px);
+        }
+
+
+        /* -----------------------------------
+           MARKDOWN
+        ----------------------------------- */
+
+        .md-content {
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+        }
+
+
+        .md-content p {
+            margin-bottom: 0.5em;
+        }
+
+
+        .md-content p:last-child {
+            margin-bottom: 0;
+        }
+
+
+        .md-content code {
+            background-color: #e4e4e7;
+            padding: 0.1em 0.35em;
+            border-radius: 0.25rem;
+            font-size: 0.85em;
+        }
+
+
+        .md-content pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+
+
+        /* -----------------------------------
+           CODE BLOCK
+        ----------------------------------- */
+
+        .md-content .code-block {
+            background-color: #282c34;
+            border-radius: 0.6rem;
+            overflow: hidden;
+            margin: 0.6em 0;
+            font-size: 0.85em;
+        }
+
+
+        .md-content .code-block-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0.4rem 0.9rem;
+
+            background-color: #21252b;
+            color: #a1a1aa;
+
+            font-size: 0.75rem;
+
+            font-family:
+                ui-monospace,
+                SFMono-Regular,
+                Menlo,
+                Monaco,
+                Consolas,
+                monospace;
+
+            text-transform: lowercase;
+        }
+
+
+        .md-content .copy-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.3em;
+
+            background: transparent;
+            color: #a1a1aa;
+
+            border: none;
+            cursor: pointer;
+
+            font-size: 0.75rem;
+
+            padding: 0.15rem 0.5rem;
+
+            border-radius: 0.3rem;
+
+            transition:
+                background-color 0.15s,
+                color 0.15s;
+        }
+
+
+        .md-content .copy-btn:hover {
+            background-color: #33373e;
+            color: #f4f4f5;
+        }
+
+
+        .md-content .code-block pre {
+            margin: 0;
+
+            padding: 0.85rem 1rem;
+
+            overflow-x: auto;
+
+            background-color: transparent;
+        }
+
+
+        .md-content .code-block code.hljs {
+            background-color: transparent;
+            padding: 0;
+        }
+
+
+        /* -----------------------------------
+           MARKDOWN LISTS
+        ----------------------------------- */
+
+        .md-content ul,
+        .md-content ol {
+            margin: 0.5em 0;
+            padding-left: 1.5em;
+        }
+
+
+        .md-content ul {
+            list-style-type: disc;
+        }
+
+
+        .md-content ol {
+            list-style-type: decimal;
+        }
+
+
+        /* -----------------------------------
+           MARKDOWN HEADINGS
+        ----------------------------------- */
+
+        .md-content h1,
+        .md-content h2,
+        .md-content h3 {
+            font-weight: 700;
+            margin: 0.6em 0 0.3em;
+        }
+
+
+        .md-content h1 {
+            font-size: 1.25em;
+        }
+
+
+        .md-content h2 {
+            font-size: 1.15em;
+        }
+
+
+        .md-content h3 {
+            font-size: 1.05em;
+        }
+
+
+        /* -----------------------------------
+           BLOCKQUOTE
+        ----------------------------------- */
+
+        .md-content blockquote {
+            border-left: 3px solid #a1a1aa;
+
+            padding-left: 0.75em;
+
+            margin: 0.5em 0;
+
+            color: #52525b;
+        }
+
+
+        /* -----------------------------------
+           LINKS
+        ----------------------------------- */
+
+        .md-content a {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+
+
+        /* -----------------------------------
+           TABLE
+        ----------------------------------- */
+
+        .md-content table {
+            border-collapse: collapse;
+
+            margin: 0.5em 0;
+
+            width: 100%;
+        }
+
+
+        .md-content th,
+        .md-content td {
+            border: 1px solid #d4d4d8;
+
+            padding: 0.35em 0.6em;
+
+            font-size: 0.9em;
+        }
+
+
+        /* -----------------------------------
+           CHAT BUBBLES
+        ----------------------------------- */
+
+        .chat-user-message {
+            align-self: flex-end;
+
+            background-color: #6366f1;
+            color: white;
+
+            border-radius: 1rem;
+            border-bottom-right-radius: 0.35rem;
+
+            padding: 1rem;
+
+            max-width: 85%;
+
+            overflow-wrap: anywhere;
+
+            white-space: pre-wrap;
+        }
+
+
+        .chat-ai-message {
+            align-self: flex-start;
+
+            background-color: #f4f4f5;
+            color: #27272a;
+
+            border-radius: 1rem;
+            border-bottom-left-radius: 0.35rem;
+
+            padding: 1rem;
+
+            max-width: 85%;
+
+            overflow-wrap: anywhere;
+        }
+
+
+        /* -----------------------------------
+           MOBILE
+        ----------------------------------- */
+
+        @media (max-width: 1023px) {
+
+            body {
+                overflow: auto;
+            }
+
+
+            .main-window {
+                height: auto;
+                min-height: 95vh;
+            }
+
+        }
+    </style>
+
+</head>
+
+
+<body class="h-screen flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
+
+
+    <!-- ==========================================
+         BACKGROUND DECORATIVE SHAPES
+    =========================================== -->
+
+    <div class="absolute top-12 left-12 w-20 h-20 bg-[#a0aeff] rounded-full opacity-80 pointer-events-none">
+    </div>
+
+
+    <div class="absolute top-1/3 -right-8 w-32 h-32 bg-[#8c9eff] rounded-full opacity-80 pointer-events-none">
+    </div>
+
+
+    <div class="absolute bottom-12 left-10 w-28 h-28 bg-[#a0aeff] rounded-full opacity-80 pointer-events-none">
+    </div>
+
+
+    <div class="absolute -bottom-10 right-1/4 w-36 h-36 bg-[#8c9eff] rounded-full opacity-80 pointer-events-none">
+    </div>
+
+
+    <!-- ==========================================
+         MAIN APP WINDOW
+    =========================================== -->
+
+    <div
+        class="main-window w-[95vw] h-[92vh] bg-[#f5f6ff] stroke-border rounded-[28px] shadow-2xl overflow-hidden flex flex-col z-10">
+
+
+        <!-- ==========================================
+             MAIN CONTENT GRID
+        =========================================== -->
+
+        <div class="grid grid-cols-12 gap-6 p-6 h-full min-h-0">
+
+
+            <!-- ==========================================
+                 LEFT SIDEBAR
+            =========================================== -->
+
+            <aside class="col-span-12 lg:col-span-2 flex flex-col min-h-0">
+
+
+                <!-- USER BADGE -->
+
+                <div
+                    class="flex items-center gap-3 cursor-pointer p-2 rounded-xl hover:bg-white/60 transition shrink-0">
+
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+                        class="w-10 h-10 rounded-full stroke-border object-cover" alt="User" />
+
+                    <span class="font-bold text-zinc-800">
+                        Element AI
+                    </span>
+
+                </div>
+
+
+                <hr class="border-zinc-300 my-4">
+
+
+                <!-- CHAT HISTORY HEADER -->
+
+                <div class="flex items-center justify-between px-2 mb-3">
+
+                    <h3 class="font-bold text-zinc-700 text-sm">
+                        Chat History
+                    </h3>
+
+
+                    <button id="newChatButton" onclick="startNewChat()"
+                        class="w-7 h-7 rounded-full bg-indigo-500 text-white flex items-center justify-center hover:bg-indigo-600 transition"
+                        title="New Chat">
+
+                        <i class="fa-solid fa-plus text-xs"></i>
+
+                    </button>
+
+                </div>
+
+
+                <!-- SESSION LIST -->
+
+                <div id="sessionList" class="flex-1 min-h-0 overflow-y-auto custom-scroll space-y-2 pr-1">
+
+                    <div class="text-xs text-zinc-400 px-2">
+                        Loading chats...
+                    </div>
+
+                </div>
+
+
+            </aside>
+
+
+            <!-- ==========================================
+                 CENTER
+            =========================================== -->
+
+            <main class="col-span-12 lg:col-span-8 flex flex-col h-full min-h-0 gap-6">
+
+
+                <!-- ==========================================
+                     CHAT DISPLAY
+                =========================================== -->
+
+                <div id="chatMessages"
+                    class="bg-white rounded-2xl stroke-border p-6 flex-1 min-h-0 space-y-4 flex flex-col overflow-y-auto custom-scroll">
+
+
+                    <!-- WELCOME MESSAGE -->
+
+                    <div id="welcomeMessage"
+                        class="flex flex-col justify-center items-center h-full text-center text-zinc-400">
+
+                        <i class="fa-solid fa-robot text-4xl text-indigo-500 mb-4">
+                        </i>
+
+
+                        <h2 class="text-xl font-bold text-zinc-700">
+                            Welcome to Element AI
+                        </h2>
+
+
+                        <p class="text-sm mt-2">
+                            Ask me anything.
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- ==========================================
+                     CHAT INPUT
+                =========================================== -->
+
+                <div class="bg-white rounded-2xl stroke-border p-4 space-y-3 shrink-0">
+
+
+                    <div class="flex items-center gap-3">
+
+
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+                            class="w-10 h-10 rounded-full stroke-border object-cover" alt="User" />
+
+
+                        <input id="messageInput" type="text" placeholder="What's on your mind? Ask Element AI..."
+                            autocomplete="off"
+                            class="w-full bg-zinc-100 stroke-border rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+
+
+                    </div>
+
+
+                    <hr class="border-zinc-200">
+
+
+                    <div class="flex justify-end text-xs font-semibold text-zinc-600 px-2 pt-1">
+
+
+                        <button id="sendButton" onclick="sendMessage()"
+                            class="flex items-center gap-2 bg-indigo-500 text-white px-5 py-2 rounded-full hover:bg-indigo-600 transition">
+
+
+                            <i class="fa-solid fa-paper-plane"></i>
+
+
+                            <span id="sendButtonText">
+                                Generate
+                            </span>
+
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </main>
+
+
+            <!-- ==========================================
+                 RIGHT SIDEBAR
+            =========================================== -->
+
+            <aside class="col-span-12 lg:col-span-2 space-y-6 overflow-y-auto custom-scroll">
+
+            </aside>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         JAVASCRIPT
+    =========================================== -->
+
+    <script>
+
+
+        /* ==========================================
+           GLOBAL STATE
+        =========================================== */
+
+        let currentSessionId = null;
+
+
+        /* ==========================================
+           MARKDOWN + SYNTAX HIGHLIGHTING
+        =========================================== */
+
+        const mdRenderer = new marked.Renderer();
+
+
+        mdRenderer.code = function (code, infostring) {
+
+            const lang = (infostring || "")
+                .trim()
+                .split(/\s+/)[0];
+
+
+            const validLang =
+                lang && hljs.getLanguage(lang)
+                    ? lang
+                    : null;
+
+
+            const highlighted = validLang
+
+                ? hljs.highlight(
+                    code,
+                    {
+                        language: validLang
+                    }
+                ).value
+
+                : hljs.highlightAuto(code).value;
+
+
+            const langLabel =
+                validLang || "code";
+
+
+            return `
+                <div class="code-block">
+
+                    <div class="code-block-header">
+
+                        <span>
+                            ${escapeHtml(langLabel)}
+                        </span>
+
+                        <button
+                            class="copy-btn"
+                            onclick="copyCode(this)">
+
+                            <i class="fa-regular fa-copy"></i>
+
+                            Copy
+
+                        </button>
+
+                    </div>
+
+
+                    <pre>
+                        <code class="hljs">${highlighted}</code>
+                    </pre>
+
+                </div>
+            `;
+        };
+
+
+        marked.use({
+            renderer: mdRenderer
+        });
+
+
+        /* ==========================================
+           COPY CODE
+        =========================================== */
+
+        function copyCode(button) {
+
+            const codeBlock =
+                button
+                    .closest(".code-block")
+                    .querySelector("code");
+
+
+            navigator.clipboard
+                .writeText(codeBlock.innerText)
+                .then(() => {
+
+                    const original =
+                        button.innerHTML;
+
+
+                    button.innerHTML =
+                        '<i class="fa-solid fa-check"></i> Copied';
+
+
+                    setTimeout(() => {
+
+                        button.innerHTML =
+                            original;
+
+                    }, 1500);
+
+                })
+                .catch(error => {
+
+                    console.error(
+                        "Could not copy code:",
+                        error
+                    );
+
+                });
+        }
+
+
+        /* ==========================================
+           ESCAPE HTML
+        =========================================== */
+
+        function escapeHtml(text) {
+
+            const div =
+                document.createElement("div");
+
+
+            div.innerText =
+                text ?? "";
+
+
+            return div.innerHTML;
+        }
+
+
+        /* ==========================================
+           LOAD ALL SESSIONS
+        =========================================== */
+
+        async function loadSessions() {
+
+            const sessionList =
+                document.getElementById("sessionList");
+
+
+            try {
+
+                const response =
+                    await fetch("/sessions");
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `Server returned ${response.status}`
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                sessionList.innerHTML = "";
+
+
+                if (
+                    !data.sessions ||
+                    data.sessions.length === 0
+                ) {
+
+                    sessionList.innerHTML = `
+                        <div class="text-xs text-zinc-400 px-2">
+                            No previous chats
+                        </div>
+                    `;
+
+                    return;
+                }
+
+
+                data.sessions.forEach(session => {
+
+                    const button =
+                        document.createElement("button");
+
+
+                    button.type =
+                        "button";
+
+
+                    button.className = `
+                        session-item
+                        w-full
+                        text-left
+                        px-3
+                        py-3
+                        rounded-xl
+                        hover:bg-white
+                        transition
+                        text-sm
+                        text-zinc-700
+                        border
+                        border-transparent
+                    `;
+
+
+                    button.dataset.sessionId =
+                        session.session_id;
+
+
+                    button.innerHTML = `
+
+                        <div class="flex items-center gap-3">
+
+                            <i
+                                class="fa-regular fa-message text-indigo-500 text-xs shrink-0">
+                            </i>
+
+
+                            <div class="min-w-0 flex-1">
+
+                                <div
+                                    class="font-semibold truncate">
+
+                                    ${escapeHtml(
+                        session.title ||
+                        "New Chat"
+                    )}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+
+                    button.addEventListener(
+                        "click",
+                        () => {
+                            loadSession(
+                                session.session_id
+                            );
+                        }
+                    );
+
+
+                    sessionList.appendChild(
+                        button
+                    );
+
+                });
+
+
+                // Restore selected session
+
+                highlightCurrentSession();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to load sessions:",
+                    error
+                );
+
+
+                sessionList.innerHTML = `
+                    <div class="text-xs text-red-400 px-2">
+                        Could not load chat history
+                    </div>
+                `;
+            }
+        }
+
+
+        /* ==========================================
+           HIGHLIGHT CURRENT SESSION
+        =========================================== */
+
+        function highlightCurrentSession() {
+
+            document
+                .querySelectorAll(".session-item")
+                .forEach(item => {
+
+                    item.classList.remove(
+                        "bg-indigo-100",
+                        "border-indigo-200"
+                    );
+
+
+                    if (
+                        item.dataset.sessionId ===
+                        currentSessionId
+                    ) {
+
+                        item.classList.add(
+                            "bg-indigo-100",
+                            "border-indigo-200"
+                        );
+
+                    }
+
+                });
+        }
+
+
+        /* ==========================================
+           LOAD PARTICULAR SESSION
+        =========================================== */
+
+        async function loadSession(sessionId) {
+
+            const chatMessages =
+                document.getElementById(
+                    "chatMessages"
+                );
+
+
+            try {
+
+                // Show loading
+
+                chatMessages.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-zinc-400">
+
+                        <div class="flex items-center gap-2">
+
+                            <i class="fa-solid fa-spinner fa-spin text-indigo-500"></i>
+
+                            <span>
+                                Loading conversation...
+                            </span>
+
+                        </div>
+
+                    </div>
+                `;
+
+
+                const response =
+                    await fetch(
+                        `/sessions/${encodeURIComponent(sessionId)}`
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `Server returned ${response.status}`
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                currentSessionId =
+                    data.session_id ||
+                    sessionId;
+
+
+                // Clear chat
+
+                chatMessages.innerHTML = "";
+
+
+                // Render messages
+
+                if (
+                    !data.messages ||
+                    data.messages.length === 0
+                ) {
+
+                    showWelcomeMessage();
+
+                } else {
+
+                    data.messages.forEach(message => {
+
+                        // Don't show system prompt
+
+                        if (
+                            message.role === "system"
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        if (
+                            message.role === "user"
+                        ) {
+
+                            addUserMessage(
+                                message.content
+                            );
+
+                        }
+
+
+                        if (
+                            message.role === "assistant"
+                        ) {
+
+                            addAIMessage(
+                                message.content
+                            );
+
+                        }
+
+                    });
+
+                }
+
+
+                // Highlight selected session
+
+                highlightCurrentSession();
+
+
+                // Scroll to bottom
+
+                chatMessages.scrollTop =
+                    chatMessages.scrollHeight;
+
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to load session:",
+                    error
+                );
+
+
+                chatMessages.innerHTML = `
+
+                    <div class="flex flex-col justify-center items-center h-full text-center">
+
+                        <i class="fa-solid fa-circle-exclamation text-3xl text-red-400 mb-3"></i>
+
+                        <h2 class="font-bold text-zinc-700">
+                            Could not load conversation
+                        </h2>
+
+                        <p class="text-sm text-zinc-400 mt-2">
+                            Please try again.
+                        </p>
+
+                    </div>
+
+                `;
+            }
+        }
+
+
+        /* ==========================================
+           SHOW WELCOME MESSAGE
+        =========================================== */
+
+        function showWelcomeMessage() {
+
+            const chatMessages =
+                document.getElementById(
+                    "chatMessages"
+                );
+
+
+            chatMessages.innerHTML = `
+
+                <div
+                    id="welcomeMessage"
+                    class="flex flex-col justify-center items-center h-full text-center text-zinc-400">
+
+                    <i
+                        class="fa-solid fa-robot text-4xl text-indigo-500 mb-4">
+                    </i>
+
+
+                    <h2 class="text-xl font-bold text-zinc-700">
+                        Welcome to Element AI
+                    </h2>
+
+
+                    <p class="text-sm mt-2">
+                        Ask me anything.
+                    </p>
+
+                </div>
+
+            `;
+        }
+
+
+        /* ==========================================
+           ADD USER MESSAGE
+        =========================================== */
+
+        function addUserMessage(message) {
+
+            const chatMessages =
+                document.getElementById(
+                    "chatMessages"
+                );
+
+
+            const userMessage =
+                document.createElement("div");
+
+
+            userMessage.className =
+                "chat-user-message";
+
+
+            userMessage.innerText =
+                message || "";
+
+
+            chatMessages.appendChild(
+                userMessage
+            );
+        }
+
+
+        /* ==========================================
+           ADD AI MESSAGE
+        =========================================== */
+
+        function addAIMessage(message) {
+
+            const chatMessages =
+                document.getElementById(
+                    "chatMessages"
+                );
+
+
+            const aiMessage =
+                document.createElement("div");
+
+
+            aiMessage.className =
+                "chat-ai-message";
+
+
+            const mdWrapper =
+                document.createElement("div");
+
+
+            mdWrapper.className =
+                "md-content prose prose-sm max-w-none";
+
+
+            mdWrapper.innerHTML =
+                marked.parse(
+                    message || ""
+                );
+
+
+            aiMessage.appendChild(
+                mdWrapper
+            );
+
+
+            chatMessages.appendChild(
+                aiMessage
+            );
+        }
+
+
+        /* ==========================================
+           START NEW CHAT
+        =========================================== */
+
+        function startNewChat() {
+
+            currentSessionId =
+                null;
+
+
+            // Clear current conversation
+
+            showWelcomeMessage();
+
+
+            // Remove selected session
+
+            document
+                .querySelectorAll(".session-item")
+                .forEach(item => {
+
+                    item.classList.remove(
+                        "bg-indigo-100",
+                        "border-indigo-200"
+                    );
+
+                });
+
+
+            // Clear input
+
+            const input =
+                document.getElementById(
+                    "messageInput"
+                );
+
+
+            input.value = "";
+
+
+            input.focus();
+        }
+
+
+        /* ==========================================
+           SEND MESSAGE
+        =========================================== */
+
+        async function sendMessage() {
+
+            const input =
+                document.getElementById(
+                    "messageInput"
+                );
+
+
+            const chatMessages =
+                document.getElementById(
+                    "chatMessages"
+                );
+
+
+            const sendButton =
+                document.getElementById(
+                    "sendButton"
+                );
+
+
+            const sendButtonText =
+                document.getElementById(
+                    "sendButtonText"
+                );
+
+
+            const welcomeMessage =
+                document.getElementById(
+                    "welcomeMessage"
+                );
+
+
+            // Get message
+
+            const message =
+                input.value.trim();
+
+
+            // Don't send empty message
+
+            if (!message) {
+
+                return;
+
+            }
+
+
+            // Remove welcome
+
+            if (welcomeMessage) {
+
+                welcomeMessage.remove();
+
+            }
+
+
+            // Disable button
+
+            sendButton.disabled =
+                true;
+
+
+            sendButton.classList.add(
+                "opacity-50",
+                "cursor-not-allowed"
+            );
+
+
+            sendButtonText.innerText =
+                "Thinking...";
+
+
+            // =================================
+            // USER MESSAGE
+            // =================================
+
+            addUserMessage(
+                message
+            );
+
+
+            // Clear input
+
+            input.value = "";
+
+
+            // =================================
+            // AI LOADING MESSAGE
+            // =================================
+
+            const aiMessage =
+                document.createElement(
+                    "div"
+                );
+
+
+            aiMessage.className =
+                "chat-ai-message";
+
+
+            aiMessage.innerHTML = `
+
+                <div class="flex items-center gap-2">
+
+                    <i
+                        class="fa-solid fa-spinner fa-spin text-indigo-500">
+                    </i>
+
+                    <span>
+                        Thinking...
+                    </span>
+
+                </div>
+
+            `;
+
+
+            chatMessages.appendChild(
+                aiMessage
+            );
+
+
+            // Scroll
+
+            chatMessages.scrollTop =
+                chatMessages.scrollHeight;
+
+
+            try {
+
+                // =================================
+                // CALL FASTAPI
+                // =================================
+
+                const response =
+                    await fetch(
+                        "/chat",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+
+                                    message:
+                                        message,
+
+                                    session_id:
+                                        currentSessionId
+
+                                })
+                        }
+                    );
+
+
+                // Check response
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `Server returned ${response.status}`
+                    );
+
+                }
+
+
+                // Parse JSON
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    "AI response:",
+                    data
+                );
+
+
+                // =================================
+                // UPDATE SESSION ID
+                // =================================
+
+                if (
+                    data.session_id
+                ) {
+
+                    currentSessionId =
+                        data.session_id;
+
+                }
+
+
+                // =================================
+                // DISPLAY AI RESPONSE
+                // =================================
+
+                aiMessage.innerHTML =
+                    "";
+
+
+                const mdWrapper =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                mdWrapper.className =
+                    "md-content prose prose-sm max-w-none";
+
+
+                mdWrapper.innerHTML =
+                    marked.parse(
+                        data.response || ""
+                    );
+
+
+                aiMessage.appendChild(
+                    mdWrapper
+                );
+
+
+                // Scroll
+
+                chatMessages.scrollTop =
+                    chatMessages.scrollHeight;
+
+
+                // =================================
+                // REFRESH SESSION LIST
+                // =================================
+
+                await loadSessions();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Chat request failed:",
+                    error
+                );
+
+
+                // Show error
+
+                aiMessage.className =
+                    "chat-ai-message bg-red-100 text-red-600";
+
+
+                aiMessage.innerHTML = `
+
+                    <div class="flex items-start gap-2">
+
+                        <i
+                            class="fa-solid fa-circle-exclamation mt-1">
+                        </i>
+
+                        <span>
+                            Sorry, something went wrong.
+                            Please try again.
+                        </span>
+
+                    </div>
+
+                `;
+
+            }
+
+
+            // =================================
+            // ENABLE BUTTON
+            // =================================
+
+            sendButton.disabled =
+                false;
+
+
+            sendButton.classList.remove(
+                "opacity-50",
+                "cursor-not-allowed"
+            );
+
+
+            sendButtonText.innerText =
+                "Generate";
+
+
+            // Focus input
+
+            input.focus();
+
+        }
+
+
+        /* ==========================================
+           ENTER KEY
+        ========================================== */
+
+        document
+            .getElementById("messageInput")
+            .addEventListener(
+                "keydown",
+                function (event) {
+
+                    if (
+                        event.key === "Enter" &&
+                        !event.shiftKey
+                    ) {
+
+                        event.preventDefault();
+
+                        sendMessage();
+
+                    }
+
+                }
+            );
+
+
+        /* ==========================================
+           INITIALIZE APPLICATION
+        ========================================== */
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                loadSessions();
+
+                document
+                    .getElementById(
+                        "messageInput"
+                    )
+                    .focus();
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Micrographics Interface [SYS_V1.0]</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+
+    <!-- Technical & Monospace Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,500;0,700;1,400&family=JetBrains+Mono:wght@300;400;600;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Markdown Renderer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+
+    <!-- Syntax Highlighting -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        :root {
+            --hud-bg: #111116;
+            --hud-panel-bg: #181820;
+            --hud-border: rgba(180, 170, 210, 0.25);
+            --hud-border-bright: #a594f9;
+            /* --hud-[#a594f9]: #a594f9; */
+            --hud-text: #cdc8e2;
+            --hud-text-dim: #736d8d;
+        }
+
+        body {
+            background-color: var(--hud-bg);
+            color: var(--hud-text);
+            font-family: 'JetBrains Mono', monospace;
+            background-image:
+                radial-gradient(circle, rgba(165, 148, 249, 0.07) 1px, transparent 1px),
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 24px 24px, 48px 48px, 48px 48px;
+            letter-spacing: 0.03em;
+        }
+
+        .font-header {
+            font-family: 'Chakra Petch', sans-serif;
+        }
+
+        .font-mono-tech {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* -----------------------------------
+           HUD CONTAINER & MICRO-BORDER STYLING
+        ----------------------------------- */
+        .hud-border {
+            border: 1px solid var(--hud-border);
+            position: relative;
+            background-color: var(--hud-panel-bg);
+        }
+
+        .hud-corner-brackets::before,
+        .hud-corner-brackets::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-color: var(--hud-border-bright);
+            pointer-events: none;
+        }
+
+        .hud-corner-brackets::before {
+            top: -1px;
+            left: -1px;
+            border-top: 2px solid var(--hud-border-bright);
+            border-left: 2px solid var(--hud-border-bright);
+        }
+
+        .hud-corner-brackets::after {
+            bottom: -1px;
+            right: -1px;
+            border-bottom: 2px solid var(--hud-border-bright);
+            border-right: 2px solid var(--hud-border-bright);
+        }
+
+        /* -----------------------------------
+           BUTTONS & INPUTS
+        ----------------------------------- */
+        .hud-btn {
+            background-color: rgba(165, 148, 249, 0.1);
+            border: 1px solid var(--hud-border-bright);
+            color: #ffffff;
+            font-family: 'Chakra Petch', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.15s ease-in-out;
+            position: relative;
+        }
+
+        .hud-btn:hover {
+            background-color: var(--hud-border-bright);
+            color: #111116;
+            box-shadow: 0 0 12px rgba(165, 148, 249, 0.4);
+        }
+
+        .hud-btn:active {
+            transform: scale(0.98);
+        }
+
+        .hud-input {
+            background-color: #121218;
+            border: 1px solid var(--hud-border);
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .hud-input:focus {
+            outline: none;
+            border-color: var(--hud-border-bright);
+            box-shadow: 0 0 8px rgba(165, 148, 249, 0.25);
+        }
+
+        /* -----------------------------------
+           CHAT BUBBLES
+        ----------------------------------- */
+        .chat-user-msg {
+            align-self: flex-end;
+            background-color: rgba(165, 148, 249, 0.15);
+            border: 1px solid var(--hud-border-bright);
+            color: #ffffff;
+            padding: 10px 14px;
+            max-width: 85%;
+            font-size: 0.85rem;
+            position: relative;
+        }
+
+        .chat-ai-msg {
+            align-self: flex-start;
+            background-color: #161620;
+            border: 1px solid var(--hud-border);
+            border-left: 3px solid var(--hud-border-bright);
+            padding: 12px 16px;
+            max-width: 90%;
+            font-size: 0.85rem;
+        }
+
+        /* -----------------------------------
+           SESSION ITEMS
+        ----------------------------------- */
+        .session-item {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--hud-border);
+            padding: 8px 10px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .session-item:hover {
+            background-color: rgba(165, 148, 249, 0.1);
+            border-color: var(--hud-border-bright);
+            color: #ffffff;
+        }
+
+        .session-item.active-session {
+            background-color: var(--hud-border-bright) !important;
+            color: #111116 !important;
+            font-weight: 700;
+        }
+
+        /* -----------------------------------
+           CUSTOM SCROLLBAR
+        ----------------------------------- */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: var(--hud-border-bright);
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* -----------------------------------
+           MARKDOWN OVERRIDES
+        ----------------------------------- */
+        .md-content p {
+            margin-bottom: 0.6em;
+            line-height: 1.5;
+        }
+
+        .md-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .md-content code {
+            background-color: #0b0b0e;
+            color: #a594f9;
+            padding: 2px 6px;
+            font-family: 'Share Tech Mono', monospace;
+            border: 1px solid rgba(165, 148, 249, 0.3);
+            font-size: 0.85em;
+        }
+
+        .md-content .code-block {
+            border: 1px solid var(--hud-border);
+            margin: 0.8em 0;
+            background-color: #0d0d12;
+        }
+
+        .md-content .code-block-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 10px;
+            background-color: rgba(165, 148, 249, 0.1);
+            color: var(--hud-border-bright);
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 0.7rem;
+            border-bottom: 1px solid var(--hud-border);
+            text-transform: uppercase;
+        }
+
+        .md-content .copy-btn {
+            background-color: transparent;
+            color: var(--hud-border-bright);
+            border: 1px solid var(--hud-border-bright);
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .md-content .copy-btn:hover {
+            background-color: var(--hud-border-bright);
+            color: #111116;
+        }
+
+        .md-content .code-block pre {
+            margin: 0;
+            padding: 12px;
+            overflow-x: auto;
+        }
+
+        .md-content ul,
+        .md-content ol {
+            margin: 0.5em 0;
+            padding-left: 1.2em;
+        }
+
+        .md-content ul {
+            list-style-type: square;
+        }
+
+        .md-content ol {
+            list-style-type: decimal;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex items-center justify-center p-2 md:p-4 overflow-hidden relative">
+
+    <!-- MAIN INTERFACE HUD CONTAINER -->
+    <div
+        class="w-full max-w-7xl h-[96vh] hud-border hud-corner-brackets flex flex-col overflow-hidden p-3 md:p-4 relative">
+
+        <!-- HUD DECORATIVE OVERLAYS -->
+        <div
+            class="absolute top-1 right-3 text-[9px] font-mono-tech text-[#736d8d] tracking-widest pointer-events-none select-none">
+            [SYS_STATE: ACTIVE] // FREQ: 142.800MHz // LATENCY: 04ms
+        </div>
+
+        <!-- HEADER TERMINAL -->
+        <header class="flex items-center justify-between pb-3 border-b border-[rgba(180,170,210,0.25)] shrink-0 pt-1">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 border border-[#a594f9] flex items-center justify-center text-[#a594f9] text-xs">
+                    <i class="fa-solid fa-crosshairs"></i>
+                </div>
+                <div>
+                    <h1
+                        class="font-header text-lg md:text-xl font-bold tracking-widest text-white flex items-center gap-2">
+                        <span>MICROGRAPHICS</span>
+                        <span class="text-xs px-1.5 py-0.5 bg-[#a594f9] text-[#111116] font-mono-tech">VOL.01</span>
+                    </h1>
+                    <p class="text-[10px] text-[#736d8d] font-mono-tech uppercase">
+                        NEURAL INTERFACE SYSTEM // EDITABLE DATA GRAPHICS
+                    </p>
+                </div>
+            </div>
+
+            <!-- STATUS INDICATORS -->
+            <div class="hidden md:flex items-center gap-6 text-[10px] font-mono-tech text-[#736d8d]">
+                <div>
+                    <span class="block text-[8px] opacity-60">TARGET_NODE</span>
+                    <span class="text-white font-bold">#SYS_0574</span>
+                </div>
+                <div>
+                    <span class="block text-[8px] opacity-60">CORE_MEMORY</span>
+                    <span class="text-[#a594f9] font-bold">150 ELEMENTS</span>
+                </div>
+                <div>
+                    <span class="block text-[8px] opacity-60">SIGNAL</span>
+                    <span class="text-emerald-400 font-bold">[ONLINE]</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT GRID -->
+        <div class="grid grid-cols-12 gap-3 pt-3 flex-1 min-h-0">
+
+            <!-- LEFT TELEMETRY SIDEBAR -->
+            <aside class="col-span-12 md:col-span-4 lg:col-span-3 flex flex-col min-h-0 gap-3">
+
+                <!-- OPERATOR BADGE -->
+                <div class="hud-border p-2.5 flex items-center gap-3 bg-[#13131a]">
+                    <div
+                        class="w-8 h-8 border border-[#a594f9] flex items-center justify-center text-[#a594f9] shrink-0">
+                        <i class="fa-solid fa-terminal text-xs"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="font-header text-xs font-bold text-white truncate">OPERATOR_007</div>
+                        <div class="text-[9px] font-mono-tech text-[#736d8d]">LOC: /DEV/TTY01</div>
+                    </div>
+                </div>
+
+                <!-- NEW SESSION BTN -->
+                <button id="newChatButton" onclick="startNewChat()"
+                    class="hud-btn py-2 px-3 w-full text-xs flex items-center justify-center gap-2 shrink-0">
+                    <i class="fa-solid fa-plus text-[10px]"></i>
+                    <span>INITIALIZE NEW LOG</span>
+                </button>
+
+                <!-- ARCHIVE LOGS -->
+                <div class="flex items-center justify-between text-[10px] font-mono-tech text-[#736d8d] px-1 shrink-0">
+                    <span>&gt; ARCHIVE_LOGS</span>
+                    <span>[SYS_REC]</span>
+                </div>
+
+                <!-- SESSION LIST -->
+                <div id="sessionList" class="flex-1 min-h-0 overflow-y-auto custom-scroll space-y-1.5 pr-1">
+                    <div class="text-[10px] text-[#736d8d] p-1 font-mono-tech">SCANNING LOG DATA...</div>
+                </div>
+
+                <!-- DECORATIVE HUD DIAGNOSTICS PANEL -->
+                <div
+                    class="hud-border p-2.5 text-[9px] font-mono-tech text-[#736d8d] space-y-1 bg-[#0f0f14] shrink-0 hidden lg:block">
+                    <div class="flex justify-between border-b border-[rgba(180,170,210,0.15)] pb-1">
+                        <span>VOLTAGE: 12.8V</span>
+                        <span>TEMP: 22°C</span>
+                    </div>
+                    <div class="flex justify-between pt-1">
+                        <span>FUSION_CORE: OK</span>
+                        <span>CYCLE: 40</span>
+                    </div>
+                </div>
+
+            </aside>
+
+            <!-- RIGHT MAIN TERMINAL CHAT AREA -->
+            <main class="col-span-12 md:col-span-8 lg:col-span-9 flex flex-col h-full min-h-0 gap-3">
+
+                <!-- CHAT MESSAGES DISPLAY -->
+                <div id="chatMessages"
+                    class="hud-border p-4 flex-1 min-h-0 space-y-3 flex flex-col overflow-y-auto custom-scroll bg-[#121218] relative">
+
+                    <!-- WELCOME PLACEHOLDER -->
+                    <div id="welcomeMessage"
+                        class="flex flex-col justify-center items-center h-full text-center my-auto p-4 space-y-3">
+                        <div
+                            class="w-12 h-12 border border-[#a594f9] flex items-center justify-center text-[#a594f9] text-xl mb-1">
+                            <i class="fa-solid fa-microchip"></i>
+                        </div>
+                        <h2 class="font-header text-sm md:text-base font-bold text-white tracking-widest">
+                            SYSTEM READY // AWAITING COMMAND
+                        </h2>
+                        <p class="text-xs max-w-md text-[#736d8d] font-mono-tech">
+                            Select a telemetry log from memory or enter your command prompt below.
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- INPUT COMMAND BAR -->
+                <div class="hud-border p-2 bg-[#14141c] flex items-center gap-2 shrink-0">
+                    <span class="text-xs text-[#a594f9] font-mono-tech pl-2">&gt;</span>
+                    <input id="messageInput" type="text" placeholder="ENTER COMMAND OR QUERY..." autocomplete="off"
+                        class="hud-input flex-1 px-3 py-2 text-xs font-mono-tech" />
+                    <button id="sendButton" onclick="sendMessage()"
+                        class="hud-btn px-4 py-2 text-xs shrink-0 flex items-center gap-2">
+                        <span id="sendButtonText">EXECUTE</span>
+                        <i class="fa-solid fa-caret-right text-[10px]"></i>
+                    </button>
+                </div>
+
+            </main>
+
+        </div>
+
+        <!-- FOOTER STATUS STRIP -->
+        <footer
+            class="mt-2 pt-2 border-t border-[rgba(180,170,210,0.15)] flex justify-between items-center text-[8px] font-mono-tech text-[#736d8d] shrink-0">
+            <div>MODE: EDITABLE VECTOR GRAPHICS LIBRARY // COMPONENTS: ACTIVE</div>
+            <div>STATUS: ONLINE // TIME ENGINE [SYNCING]</div>
+        </footer>
+
+    </div>
+
+    <!-- JAVASCRIPT ENGINE -->
+    <script>
+        let currentSessionId = null;
+
+        /* MARKDOWN & SYNTAX HIGHLIGHTING */
+        const mdRenderer = new marked.Renderer();
+        mdRenderer.code = function (code, infostring) {
+            const lang = (infostring || "").trim().split(/\s+/)[0];
+            const validLang = lang && hljs.getLanguage(lang) ? lang : null;
+            const highlighted = validLang
+                ? hljs.highlight(code, { language: validLang }).value
+                : hljs.highlightAuto(code).value;
+            const langLabel = validLang || "DATA_STREAM";
+
+            return `
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <span>[${escapeHtml(langLabel)}]</span>
+                        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+                    </div>
+                    <pre><code class="hljs">${highlighted}</code></pre>
+                </div>
+            `;
+        };
+
+        marked.use({ renderer: mdRenderer });
+
+        function copyCode(button) {
+            const codeBlock = button.closest(".code-block").querySelector("code");
+            navigator.clipboard.writeText(codeBlock.innerText).then(() => {
+                const original = button.innerHTML;
+                button.innerHTML = "COPIED";
+                setTimeout(() => { button.innerHTML = original; }, 1500);
+            }).catch(console.error);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement("div");
+            div.innerText = text ?? "";
+            return div.innerHTML;
+        }
+
+        /* SESSION MANAGEMENT */
+        async function loadSessions() {
+            const sessionList = document.getElementById("sessionList");
+            try {
+                const response = await fetch("/sessions");
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+
+                sessionList.innerHTML = "";
+                if (!data.sessions || data.sessions.length === 0) {
+                    sessionList.innerHTML = `<div class="text-[10px] text-[#736d8d] p-1 font-mono-tech">[NO_LOGS_FOUND]</div>`;
+                    return;
+                }
+
+                data.sessions.forEach(session => {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = `session-item w-full text-left truncate flex items-center gap-2 font-mono-tech`;
+                    button.dataset.sessionId = session.session_id;
+                    button.innerHTML = `
+                        <span class="text-[#a594f9]">&gt;</span>
+                        <span class="truncate">${escapeHtml(session.title || "LOG_ENTRY")}</span>
+                    `;
+                    button.addEventListener("click", () => loadSession(session.session_id));
+                    sessionList.appendChild(button);
+                });
+
+                highlightCurrentSession();
+            } catch (error) {
+                console.error("Failed to load sessions:", error);
+                sessionList.innerHTML = `<div class="text-[10px] text-red-400 p-1 font-mono-tech">ERR: SESSION_READ_FAIL</div>`;
+            }
+        }
+
+        function highlightCurrentSession() {
+            document.querySelectorAll(".session-item").forEach(item => {
+                if (item.dataset.sessionId === currentSessionId) {
+                    item.classList.add("active-session");
+                } else {
+                    item.classList.remove("active-session");
+                }
+            });
+        }
+
+        async function loadSession(sessionId) {
+            const chatMessages = document.getElementById("chatMessages");
+            try {
+                chatMessages.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-xs font-mono-tech text-[#a594f9] gap-2">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <span>READING MEMORY BANK...</span>
+                    </div>
+                `;
+
+                const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}`);
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+
+                currentSessionId = data.session_id || sessionId;
+                chatMessages.innerHTML = "";
+
+                if (!data.messages || data.messages.length === 0) {
+                    showWelcomeMessage();
+                } else {
+                    data.messages.forEach(message => {
+                        if (message.role === "user") addUserMessage(message.content);
+                        if (message.role === "assistant") addAIMessage(message.content);
+                    });
+                }
+
+                highlightCurrentSession();
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (error) {
+                console.error("Failed to load session:", error);
+                chatMessages.innerHTML = `
+                    <div class="flex flex-col justify-center items-center h-full text-red-400 text-xs font-mono-tech">
+                        <span>[ERR: TELEMETRY_READ_FAILURE]</span>
+                    </div>
+                `;
+            }
+        }
+
+        function showWelcomeMessage() {
+            document.getElementById("chatMessages").innerHTML = `
+                <div id="welcomeMessage" class="flex flex-col justify-center items-center h-full text-center my-auto p-4 space-y-3">
+                    <div class="w-12 h-12 border border-[#a594f9] flex items-center justify-center text-[#a594f9] text-xl mb-1">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <h2 class="font-header text-sm md:text-base font-bold text-white tracking-widest">
+                        SYSTEM READY // AWAITING COMMAND
+                    </h2>
+                    <p class="text-xs max-w-md text-[#736d8d] font-mono-tech">
+                        Select a telemetry log from memory or enter your command prompt below.
+                    </p>
+                </div>
+            `;
+        }
+
+        function addUserMessage(message) {
+            const chatMessages = document.getElementById("chatMessages");
+            const userMessage = document.createElement("div");
+            userMessage.className = "chat-user-msg";
+            userMessage.innerText = message || "";
+            chatMessages.appendChild(userMessage);
+        }
+
+        function addAIMessage(message) {
+            const chatMessages = document.getElementById("chatMessages");
+            const aiMessage = document.createElement("div");
+            aiMessage.className = "chat-ai-msg";
+
+            const mdWrapper = document.createElement("div");
+            mdWrapper.className = "md-content";
+            mdWrapper.innerHTML = marked.parse(message || "");
+
+            aiMessage.appendChild(mdWrapper);
+            chatMessages.appendChild(aiMessage);
+        }
+
+        function startNewChat() {
+            currentSessionId = null;
+            showWelcomeMessage();
+            highlightCurrentSession();
+            const input = document.getElementById("messageInput");
+            input.value = "";
+            input.focus();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("messageInput");
+            const chatMessages = document.getElementById("chatMessages");
+            const sendButton = document.getElementById("sendButton");
+            const sendButtonText = document.getElementById("sendButtonText");
+            const welcomeMessage = document.getElementById("welcomeMessage");
+
+            const message = input.value.trim();
+            if (!message) return;
+
+            if (welcomeMessage) welcomeMessage.remove();
+
+            sendButton.disabled = true;
+            sendButtonText.innerText = "BUSY";
+
+            addUserMessage(message);
+            input.value = "";
+
+            const aiMessage = document.createElement("div");
+            aiMessage.className = "chat-ai-msg";
+            aiMessage.innerHTML = `
+                <div class="flex items-center gap-2 text-xs text-[#a594f9] font-mono-tech">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <span>PROCESSING DATA VECTOR...</span>
+                </div>
+            `;
+            chatMessages.appendChild(aiMessage);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: message, session_id: currentSessionId })
+                });
+
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+
+                if (data.session_id) currentSessionId = data.session_id;
+
+                aiMessage.innerHTML = "";
+                const mdWrapper = document.createElement("div");
+                mdWrapper.className = "md-content";
+                mdWrapper.innerHTML = marked.parse(data.response || "");
+                aiMessage.appendChild(mdWrapper);
+
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                await loadSessions();
+            } catch (error) {
+                console.error("Chat request failed:", error);
+                aiMessage.className = "chat-ai-msg border-red-500 text-red-400";
+                aiMessage.innerHTML = `<span class="text-xs font-mono-tech">[SIGNAL_LOST_ERROR]</span>`;
+            }
+
+            sendButton.disabled = false;
+            sendButtonText.innerText = "EXECUTE";
+            input.focus();
+        }
+
+        document.getElementById("messageInput").addEventListener("keydown", function (event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loadSessions();
+            document.getElementById("messageInput").focus();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 def get_time(date=False, time=False):
     now = datetime.now()
 
