@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Micrographics Neural Terminal [MONO_FLOAT]</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+
+    <!-- Technical & Monospace Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,500;0,700;1,400&family=JetBrains+Mono:wght@300;400;600;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Markdown Renderer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+
+    <!-- Syntax Highlighting (Monochrome Style) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/mono-blue.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #070709;
+            --hud-line: rgba(255, 255, 255, 0.2);
+            --hud-line-bright: #ffffff;
+            --hud-text: #e0e0e0;
+            --hud-dim: #606065;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--hud-text);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.02em;
+            background-image:
+                radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 32px 32px, 64px 64px, 64px 64px;
+        }
+
+        .font-header {
+            font-family: 'Chakra Petch', sans-serif;
+        }
+
+        .font-mono-tech {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* Floating Component Base Style */
+        .float-node {
+            background-color: rgba(14, 14, 18, 0.85);
+            border: 1px solid var(--hud-line);
+            backdrop-filter: blur(8px);
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .float-node:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Micro Crosshair Corner Anchors */
+        .corner-anchor::before,
+        .corner-anchor::after {
+            content: '+';
+            position: absolute;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--hud-line-bright);
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .corner-anchor::before {
+            top: -6px;
+            left: -6px;
+        }
+
+        .corner-anchor::after {
+            bottom: -6px;
+            right: -6px;
+        }
+
+        /* Floating Interactive Buttons */
+        .hud-btn {
+            background-color: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--hud-line-bright);
+            color: #ffffff;
+            font-family: 'Chakra Petch', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .hud-btn:hover {
+            background-color: #ffffff;
+            color: #000000;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+        }
+
+        /* Floating Inputs */
+        .hud-input {
+            background-color: rgba(5, 5, 5, 0.9);
+            border: 1px solid var(--hud-line);
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .hud-input:focus {
+            outline: none;
+            border-color: var(--hud-line-bright);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Modular Chat Bubbles */
+        .chat-user-msg {
+            align-self: flex-end;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid #ffffff;
+            color: #ffffff;
+            padding: 8px 12px;
+            max-width: 80%;
+            font-size: 0.8rem;
+            position: relative;
+        }
+
+        .chat-ai-msg {
+            align-self: flex-start;
+            background-color: rgba(18, 18, 22, 0.9);
+            border: 1px solid var(--hud-line);
+            border-left: 3px solid #ffffff;
+            padding: 10px 14px;
+            max-width: 88%;
+            font-size: 0.8rem;
+        }
+
+        /* Floating Session Badges */
+        .session-item {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--hud-line);
+            padding: 6px 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .session-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: #ffffff;
+            color: #ffffff;
+            transform: translateX(2px);
+        }
+
+        .session-item.active-session {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            font-weight: 700;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #ffffff;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        /* Markdown Overrides */
+        .md-content p {
+            margin-bottom: 0.5em;
+            line-height: 1.4;
+        }
+
+        .md-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .md-content code {
+            background-color: #000;
+            color: #fff;
+            padding: 2px 4px;
+            font-family: 'Share Tech Mono', monospace;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 0.8em;
+        }
+
+        .md-content .code-block {
+            border: 1px solid var(--hud-line);
+            margin: 0.6em 0;
+            background-color: #000;
+        }
+
+        .md-content .code-block-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 0.65rem;
+            border-bottom: 1px solid var(--hud-line);
+        }
+
+        .md-content .copy-btn {
+            background-color: transparent;
+            color: #fff;
+            border: 1px solid #fff;
+            font-size: 0.6rem;
+            padding: 1px 6px;
+            cursor: pointer;
+        }
+
+        .md-content .copy-btn:hover {
+            background-color: #fff;
+            color: #000;
+        }
+
+        .md-content .code-block pre {
+            margin: 0;
+            padding: 8px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body class="h-screen w-screen p-3 md:p-5 flex flex-col justify-between overflow-hidden relative select-none">
+
+    <!-- FLOATING BACKGROUND DECORATIVE MICROGRAPHICS SCATTERED CHIPS -->
+    <div class="absolute top-2 left-10 text-[8px] font-mono-tech text-[var(--hud-dim)] pointer-events-none">
+        [ARCHIVE_LOG] // REF: 0092-B // MODE: DUAL_NODE
+    </div>
+    <div class="absolute top-12 right-8 text-[8px] font-mono-tech text-[var(--hud-dim)] pointer-events-none">
+        + SYS_VOLTAGE: 12.8V // TEMP: 22°C // CYCLE: 40
+    </div>
+    <div class="absolute bottom-12 left-6 text-[8px] font-mono-tech text-[var(--hud-dim)] pointer-events-none">
+        (ANALOG) [007] // VECTOR_RST: STABLE
+    </div>
+    <div class="absolute bottom-4 right-16 text-[8px] font-mono-tech text-[var(--hud-dim)] pointer-events-none">
+        SW_VER: 2026.8.12 // TIME_ENGINE (SYNC)
+    </div>
+
+    <!-- 1. TOP FLOATING NAVIGATION / HEADER STRIP -->
+    <header class="flex flex-wrap items-center justify-between gap-3 shrink-0 z-10">
+        <!-- Brand Chip -->
+        <div class="float-node corner-anchor px-3 py-1.5 flex items-center gap-2">
+            <div class="w-5 h-5 border border-white flex items-center justify-center text-white text-[10px]">
+                <i class="fa-solid fa-crosshairs"></i>
+            </div>
+            <span class="font-header text-sm font-bold tracking-widest text-white">MICROGRAPHICS</span>
+            <span class="text-[9px] px-1 bg-white text-black font-mono-tech font-bold">VOL.1</span>
+        </div>
+
+        <!-- Scattered Floating Diagnostic Chips -->
+        <div class="hidden md:flex items-center gap-2 text-[9px] font-mono-tech">
+            <div class="float-node px-2.5 py-1 text-[var(--hud-dim)]">
+                TARGET: <span class="text-white font-bold">#SYS_0574</span>
+            </div>
+            <div class="float-node px-2.5 py-1 text-[var(--hud-dim)]">
+                LIB: <span class="text-white font-bold">150 ELEMENTS</span>
+            </div>
+            <div class="float-node px-2.5 py-1 text-[var(--hud-dim)]">
+                STATUS: <span class="text-white font-bold">[ONLINE]</span>
+            </div>
+        </div>
+
+        <!-- System Reset Button -->
+        <button onclick="startNewChat()"
+            class="hud-btn float-node corner-anchor px-3 py-1.5 text-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-rotate text-[10px]"></i>
+            <span>INITIALIZE_NEW</span>
+        </button>
+    </header>
+
+    <!-- 2. MAIN FLOATING INTERFACE WORKSPACE -->
+    <div class="flex-1 my-3 grid grid-cols-12 gap-3 min-h-0 z-10">
+
+        <!-- LEFT: FLOATING LOG ARCHIVE (SIDEBAR) -->
+        <aside class="col-span-12 md:col-span-3 lg:col-span-2 flex flex-col min-h-0 gap-2">
+
+            <!-- Sidebar Title Label -->
+            <div
+                class="float-node px-2 py-1 flex items-center justify-between text-[9px] font-mono-tech text-[var(--hud-dim)]">
+                <span>&gt; ARCHIVE_LOGS</span>
+                <span>[009]</span>
+            </div>
+
+            <!-- Scrollable Session Chips Container -->
+            <div id="sessionList" class="flex-1 min-h-0 overflow-y-auto custom-scroll space-y-1.5 pr-0.5">
+                <div class="text-[9px] text-[var(--hud-dim)] p-1 font-mono-tech">SCANNING...</div>
+            </div>
+
+            <!-- Micro Diagnostic Dial -->
+            <div class="float-node p-2 text-[8px] font-mono-tech text-[var(--hud-dim)] space-y-1 hidden md:block">
+                <div class="flex justify-between border-b border-white/10 pb-0.5">
+                    <span>OVERRIDE</span>
+                    <span class="text-white">ACTIVE</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>EPOCH</span>
+                    <span class="text-white">0830 / 0912</span>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- RIGHT: CHAT DISPLAY CANVAS & INPUT FIELD -->
+        <main class="col-span-12 md:col-span-9 lg:col-span-10 flex flex-col h-full min-h-0 gap-2">
+
+            <!-- FLOATING CHAT MESSAGES DISPLAY -->
+            <div id="chatMessages"
+                class="flex-1 min-h-0 overflow-y-auto custom-scroll space-y-2.5 pr-1 flex flex-col relative">
+
+                <!-- WELCOME FLOATING PLACEHOLDER -->
+                <div id="welcomeMessage"
+                    class="float-node corner-anchor m-auto p-6 flex flex-col items-center justify-center text-center space-y-2 max-w-sm">
+                    <div class="w-10 h-10 border border-white flex items-center justify-center text-white text-lg">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <h2 class="font-header text-xs font-bold text-white tracking-widest">
+                        AWAITING_COMMAND_VECTOR
+                    </h2>
+                    <p class="text-[10px] text-[var(--hud-dim)] font-mono-tech">
+                        Select an archived log entry or initiate a prompt payload below.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- FLOATING INPUT COMMAND BAR -->
+            <div class="float-node corner-anchor p-1.5 flex items-center gap-2 shrink-0">
+                <span class="text-xs text-white font-mono-tech pl-1.5">&gt;</span>
+                <input id="messageInput" type="text" placeholder="ENTER COMMAND OR DATA QUERY..." autocomplete="off"
+                    class="hud-input flex-1 px-3 py-1.5 text-xs font-mono-tech" />
+                <button id="sendButton" onclick="sendMessage()"
+                    class="hud-btn px-4 py-1.5 text-xs shrink-0 flex items-center gap-1.5">
+                    <span id="sendButtonText">EXECUTE</span>
+                    <i class="fa-solid fa-caret-right text-[10px]"></i>
+                </button>
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- 3. FOOTER MICRO STRIP -->
+    <footer
+        class="flex items-center justify-between text-[8px] font-mono-tech text-[var(--hud-dim)] shrink-0 z-10 px-1">
+        <div>MODE: FLOATING MICRO COMPONENTS // EDITABLE VECTOR LIBRARY</div>
+        <div>SYS_NODE: READY</div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC ENGINE -->
+    <script>
+        let currentSessionId = null;
+
+        /* MARKDOWN & SYNTAX HIGHLIGHTING */
+        const mdRenderer = new marked.Renderer();
+        mdRenderer.code = function (code, infostring) {
+            const lang = (infostring || "").trim().split(/\s+/)[0];
+            const validLang = lang && hljs.getLanguage(lang) ? lang : null;
+            const highlighted = validLang
+                ? hljs.highlight(code, { language: validLang }).value
+                : hljs.highlightAuto(code).value;
+            const langLabel = validLang || "STREAM";
+
+            return `
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <span>[${escapeHtml(langLabel)}]</span>
+                        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+                    </div>
+                    <pre><code class="hljs">${highlighted}</code></pre>
+                </div>
+            `;
+        };
+
+        marked.use({ renderer: mdRenderer });
+
+        function copyCode(button) {
+            const codeBlock = button.closest(".code-block").querySelector("code");
+            navigator.clipboard.writeText(codeBlock.innerText).then(() => {
+                const original = button.innerHTML;
+                button.innerHTML = "COPIED";
+                setTimeout(() => { button.innerHTML = original; }, 1500);
+            }).catch(console.error);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement("div");
+            div.innerText = text ?? "";
+            return div.innerHTML;
+        }
+
+        /* SESSION MANAGEMENT */
+        async function loadSessions() {
+            const sessionList = document.getElementById("sessionList");
+            try {
+                const response = await fetch("/sessions");
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+
+                sessionList.innerHTML = "";
+                if (!data.sessions || data.sessions.length === 0) {
+                    sessionList.innerHTML = `<div class="text-[9px] text-[var(--hud-dim)] p-1 font-mono-tech">[NO_LOGS]</div>`;
+                    return;
+                }
+
+                data.sessions.forEach(session => {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = `session-item float-node w-full text-left truncate flex items-center gap-1.5 font-mono-tech`;
+                    button.dataset.sessionId = session.session_id;
+                    button.innerHTML = `
+                        <span class="text-white">&gt;</span>
+                        <span class="truncate">${escapeHtml(session.title || "LOG_ENTRY")}</span>
+                    `;
+                    button.addEventListener("click", () => loadSession(session.session_id));
+                    sessionList.appendChild(button);
+                });
+
+                highlightCurrentSession();
+            } catch (error) {
+                console.error("Failed to load sessions:", error);
+                sessionList.innerHTML = `<div class="text-[9px] text-white p-1 font-mono-tech">ERR: READ_FAIL</div>`;
+            }
+        }
+
+        function highlightCurrentSession() {
+            document.querySelectorAll(".session-item").forEach(item => {
+                if (item.dataset.sessionId === currentSessionId) {
+                    item.classList.add("active-session");
+                } else {
+                    item.classList.remove("active-session");
+                }
+            });
+        }
+
+        async function loadSession(sessionId) {
+            const chatMessages = document.getElementById("chatMessages");
+            try {
+                chatMessages.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-xs font-mono-tech text-white gap-2">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <span>READING MEMORY...</span>
+                    </div>
+                `;
+
+                const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}`);
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+
+                currentSessionId = data.session_id || sessionId;
+                chatMessages.innerHTML = "";
+
+                if (!data.messages || data.messages.length === 0) {
+                    showWelcomeMessage();
+                } else {
+                    data.messages.forEach(message => {
+                        if (message.role === "user") addUserMessage(message.content);
+                        if (message.role === "assistant") addAIMessage(message.content);
+                    });
+                }
+
+                highlightCurrentSession();
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (error) {
+                console.error("Failed to load session:", error);
+                chatMessages.innerHTML = `
+                    <div class="flex flex-col justify-center items-center h-full text-white text-xs font-mono-tech">
+                        <span>[ERR: TELEMETRY_FAILURE]</span>
+                    </div>
+                `;
+            }
+        }
+
+        function showWelcomeMessage() {
+            document.getElementById("chatMessages").innerHTML = `
+                <div id="welcomeMessage" class="float-node corner-anchor m-auto p-6 flex flex-col items-center justify-center text-center space-y-2 max-w-sm">
+                    <div class="w-10 h-10 border border-white flex items-center justify-center text-white text-lg">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <h2 class="font-header text-xs font-bold text-white tracking-widest">
+                        AWAITING_COMMAND_VECTOR
+                    </h2>
+                    <p class="text-[10px] text-[var(--hud-dim)] font-mono-tech">
+                        Select an archived log entry or initiate a prompt payload below.
+                    </p>
+                </div>
+            `;
+        }
+
+        function addUserMessage(message) {
+            const chatMessages = document.getElementById("chatMessages");
+            const userMessage = document.createElement("div");
+            userMessage.className = "chat-user-msg float-node";
+            userMessage.innerText = message || "";
+            chatMessages.appendChild(userMessage);
+        }
+
+        function addAIMessage(message) {
+            const chatMessages = document.getElementById("chatMessages");
+            const aiMessage = document.createElement("div");
+            aiMessage.className = "chat-ai-msg float-node";
+
+            const mdWrapper = document.createElement("div");
+            mdWrapper.className = "md-content";
+            mdWrapper.innerHTML = marked.parse(message || "");
+
+            aiMessage.appendChild(mdWrapper);
+            chatMessages.appendChild(aiMessage);
+        }
+
+        function startNewChat() {
+            currentSessionId = null;
+            showWelcomeMessage();
+            highlightCurrentSession();
+            const input = document.getElementById("messageInput");
+            input.value = "";
+            input.focus();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("messageInput");
+            const chatMessages = document.getElementById("chatMessages");
+            const sendButton = document.getElementById("sendButton");
+            const sendButtonText = document.getElementById("sendButtonText");
+            const welcomeMessage = document.getElementById("welcomeMessage");
+
+            const message = input.value.trim();
+            if (!message) return;
+
+            if (welcomeMessage) welcomeMessage.remove();
+
+            sendButton.disabled = true;
+            sendButtonText.innerText = "BUSY";
+
+            addUserMessage(message);
+            input.value = "";
+
+            const aiMessage = document.createElement("div");
+            aiMessage.className = "chat-ai-msg float-node";
+            aiMessage.innerHTML = `
+                <div class="flex items-center gap-2 text-xs text-white font-mono-tech">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <span>PROCESSING VECTOR...</span>
+                </div>
+            `;
+            chatMessages.appendChild(aiMessage);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: message, session_id: currentSessionId })
+                });
+
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+
+                if (data.session_id) currentSessionId = data.session_id;
+
+                aiMessage.innerHTML = "";
+                const mdWrapper = document.createElement("div");
+                mdWrapper.className = "md-content";
+                mdWrapper.innerHTML = marked.parse(data.response || "");
+                aiMessage.appendChild(mdWrapper);
+
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                await loadSessions();
+            } catch (error) {
+                console.error("Chat request failed:", error);
+                aiMessage.className = "chat-ai-msg float-node border-white text-white";
+                aiMessage.innerHTML = `<span class="text-xs font-mono-tech">[SIGNAL_LOST_ERROR]</span>`;
+            }
+
+            sendButton.disabled = false;
+            sendButtonText.innerText = "EXECUTE";
+            input.focus();
+        }
+
+        document.getElementById("messageInput").addEventListener("keydown", function (event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loadSessions();
+            document.getElementById("messageInput").focus();
+        });
+    </script>
+</body>
+
+</html>
